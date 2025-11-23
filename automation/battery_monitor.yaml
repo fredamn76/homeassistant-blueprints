@@ -2,7 +2,7 @@ blueprint:
   name: Battery Monitor (Smart Alert)
   description: >-
     Monitors battery sensors and sends a notification when the level drops below a set threshold.
-    QA-Verified: Uses 'notification_icon' to correctly override Android system icon.
+    QA-Verified: Removed broken icon override due to Android Bug #5758.
   source_url: https://github.com/fredamn76/homeassistant-blueprints/blob/main/automation/battery_monitor.yaml
   domain: automation
   input:
@@ -31,7 +31,7 @@ blueprint:
       default: ""
     notification_logo:
       name: Brand Logo URL
-      description: "URL to an image/logo to display as the large banner image."
+      description: "URL to an image/logo to display in notifications (use Raw GitHub URL)."
       default: "https://raw.githubusercontent.com/fredamn76/homeassistant-blueprints/main/images/logo.jpg"
       selector:
         text: {}
@@ -66,11 +66,7 @@ action:
               data:
                 tag: "battery-alert-{{ trigger.entity_id }}"
                 channel: "Battery"
-                
-                # QA FIX: Correct parameter per documentation
-                notification_icon: "mdi:battery-alert"
-                
-                # Large Brand Image
+                # QA FIX: Removed 'icon' field due to Android bug #5758
                 image: "{{ logo_url }}"
                 push:
                   sound:
