@@ -2,7 +2,7 @@ blueprint:
   name: Battery Monitor (Smart Alert)
   description: >-
     Monitors battery sensors and sends a notification when the level drops below a set threshold.
-    QA-Verified: Fixed schema validation errors for import stability.
+    QA-Verified: Includes branding logo support and schema validation fixes.
   source_url: https://github.com/fredamn76/homeassistant-blueprints/blob/main/automation/battery_monitor.yaml
   domain: automation
   input:
@@ -29,6 +29,12 @@ blueprint:
       selector:
         text: {}
       default: ""
+    notification_logo:
+      name: Brand Logo URL
+      description: "URL to an image/logo to display in notifications (use Raw GitHub URL)."
+      default: "https://raw.githubusercontent.com/fredamn76/homeassistant-blueprints/main/images/logo.png"
+      selector:
+        text: {}
     actions:
       name: Additional Actions (Optional)
       description: "Run extra actions, e.g., TTS to smart speakers."
@@ -46,8 +52,8 @@ action:
       sensor_name: "{{ trigger.to_state.name }}"
       battery_level: "{{ trigger.to_state.state }}"
       notify_service: !input notify_service
+      logo_url: !input notification_logo
 
-  # QA Logic: Check if notification service is defined before attempting to run it
   - choose:
       - conditions:
           - condition: template
@@ -58,17 +64,15 @@ action:
               title: "🪫 Low Battery"
               message: "{{ sensor_name }} is down to {{ battery_level }}%."
               data:
-                # Tag ensures updates replace the old notification on the phone
                 tag: "battery-alert-{{ trigger.entity_id }}"
                 channel: "Battery"
+                image: "{{ logo_url }}"
                 push:
                   sound:
                     name: default
                     critical: 0
                     volume: 0.5
 
-  # QA Fix: Correct way to implement dynamic action lists
-  # We use a dummy 'if' to allow expanding the input list safely.
   - if:
       - condition: template
         value_template: "{{ true }}"
