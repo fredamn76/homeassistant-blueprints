@@ -2,7 +2,7 @@ blueprint:
   name: "Person & Zone Tracker (Life360-style)"
   description: >-
     Advanced tracking with profile pictures, GPS maps, duration logging, and privacy mode.
-    QA-Verified: Generates direct Google Maps pins via coordinates.
+    QA-Verified: Google Maps Pin Support + Strict MDI Icon Protocol.
   domain: automation
   source_url: https://github.com/fredamn76/homeassistant-blueprints/blob/main/automation/person_zone_tracker.yaml
   input:
@@ -227,9 +227,8 @@ action:
         {% else %}
           ""
         {% endif %}
-
-      # QA: Construct dynamic Google Maps URL (Pin)
-      # If no coordinates (e.g. WiFi tracker), fallback to Dashboard Map
+      
+      # QA: Generate Google Maps Link with Pin
       map_uri: >-
         {% if person_lat != none and person_lon != none %}
           https://www.google.com/maps/search/?api=1&query={{ person_lat }},{{ person_lon }}
@@ -256,16 +255,19 @@ action:
               data:
                 channel: "{{ notification_channel if notification_channel != '' else none }}"
                 tag: "person-location-{{ person_slug }}"
+                
+                # QA FIX: Strict Protocol. Removed 'icon_url'.
                 icon: "mdi:account"
                 image: "{{ notification_image }}"
-                # QA: Still injecting coordinates for system-level map features
+                
+                # Coordinates for system map features
                 "{% if person_lat != none and person_lon != none %}latitude{% endif %}": "{{ person_lat if person_lat != none else '' }}"
                 "{% if person_lat != none and person_lon != none %}longitude{% endif %}": "{{ person_lon if person_lon != none else '' }}"
+                
                 clickAction: "{{ raw_map_url }}"
                 actions:
                   - action: "URI"
                     title: "🗺️ Map"
-                    # QA FIX: Using the dynamic Google Maps link here
                     uri: "{{ map_uri }}"
                   - action: "URI"
                     title: "👤 Info"
@@ -283,15 +285,18 @@ action:
               data:
                 channel: "{{ notification_channel if notification_channel != '' else none }}"
                 tag: "person-location-{{ person_slug }}"
+                
+                # QA FIX: Strict Protocol
                 icon: "mdi:account"
                 image: "{{ notification_image }}"
+                
                 "{% if person_lat != none and person_lon != none %}latitude{% endif %}": "{{ person_lat if person_lat != none else '' }}"
                 "{% if person_lat != none and person_lon != none %}longitude{% endif %}": "{{ person_lon if person_lon != none else '' }}"
+                
                 clickAction: "{{ raw_map_url }}"
                 actions:
                   - action: "URI"
                     title: "🗺️ Map"
-                    # QA FIX: Using the dynamic Google Maps link here
                     uri: "{{ map_uri }}"
                   - action: "URI"
                     title: "👤 Info"
