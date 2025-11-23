@@ -2,7 +2,7 @@ blueprint:
   name: Battery Monitor (Smart Alert)
   description: >-
     Monitors battery sensors and sends a notification when the level drops below a set threshold.
-    QA-Verified: Includes branding logo support and schema validation fixes.
+    QA-Verified: Includes custom branding (icon/image) and schema validation fixes.
   source_url: https://github.com/fredamn76/homeassistant-blueprints/blob/main/automation/battery_monitor.yaml
   domain: automation
   input:
@@ -32,7 +32,7 @@ blueprint:
     notification_logo:
       name: Brand Logo URL
       description: "URL to an image/logo to display in notifications (use Raw GitHub URL)."
-      default: "https://raw.githubusercontent.com/fredamn76/homeassistant-blueprints/main/images/logo.png"
+      default: "https://raw.githubusercontent.com/fredamn76/homeassistant-blueprints/main/images/logo.jpg"
       selector:
         text: {}
     actions:
@@ -66,6 +66,8 @@ action:
               data:
                 tag: "battery-alert-{{ trigger.entity_id }}"
                 channel: "Battery"
+                # QA: Sets both Large Icon and Big Picture to your logo
+                icon: "{{ logo_url }}"
                 image: "{{ logo_url }}"
                 push:
                   sound:
@@ -73,6 +75,7 @@ action:
                     critical: 0
                     volume: 0.5
 
+  # QA Fix: Using 'if' wrapper to correctly handle optional actions list
   - if:
       - condition: template
         value_template: "{{ true }}"
