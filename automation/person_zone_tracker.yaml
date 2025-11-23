@@ -2,7 +2,7 @@ blueprint:
   name: "Person & Zone Tracker (Life360-style)"
   description: >-
     Advanced tracking with profile pictures, GPS maps, duration logging, and privacy mode.
-    QA-Verified: Uses MDI icons for badge. Injects native GPS coordinates for map support on iOS/Android.
+    QA-Verified: Generates direct Google Maps pins via coordinates.
   domain: automation
   source_url: https://github.com/fredamn76/homeassistant-blueprints/blob/main/automation/person_zone_tracker.yaml
   input:
@@ -72,7 +72,8 @@ blueprint:
         text: {}
     
     click_url:
-      name: "Link: Map (Common)"
+      name: "Link: Dashboard Map"
+      description: "Default action when clicking the notification body."
       default: "/lovelace/map"
       selector:
         text: {}
@@ -179,7 +180,6 @@ action:
       raw_person_url: !input person_url
       person_name: "{{ trigger.to_state.name }}"
       person_entity: "{{ trigger.entity_id }}"
-      # QA: Grab coordinates safely
       person_lat: "{{ state_attr(person_entity, 'latitude') }}"
       person_lon: "{{ state_attr(person_entity, 'longitude') }}"
       person_slug: "{{ person_name | slugify }}"
@@ -228,6 +228,15 @@ action:
           ""
         {% endif %}
 
+      # QA: Construct dynamic Google Maps URL (Pin)
+      # If no coordinates (e.g. WiFi tracker), fallback to Dashboard Map
+      map_uri: >-
+        {% if person_lat != none and person_lon != none %}
+          https://www.google.com/maps/search/?api=1&query={{ person_lat }},{{ person_lon }}
+        {% else %}
+          {{ raw_map_url }}
+        {% endif %}
+
   - service: logbook.log
     data:
       name: "{{ person_name }}"
@@ -247,17 +256,17 @@ action:
               data:
                 channel: "{{ notification_channel if notification_channel != '' else none }}"
                 tag: "person-location-{{ person_slug }}"
-                # QA: Standard MDI icon for status bar
                 icon: "mdi:account"
                 image: "{{ notification_image }}"
-                # QA: Inject coordinates only if they exist (safe-guard)
+                # QA: Still injecting coordinates for system-level map features
                 "{% if person_lat != none and person_lon != none %}latitude{% endif %}": "{{ person_lat if person_lat != none else '' }}"
                 "{% if person_lat != none and person_lon != none %}longitude{% endif %}": "{{ person_lon if person_lon != none else '' }}"
                 clickAction: "{{ raw_map_url }}"
                 actions:
                   - action: "URI"
                     title: "🗺️ Map"
-                    uri: "{{ raw_map_url }}"
+                    # QA FIX: Using the dynamic Google Maps link here
+                    uri: "{{ map_uri }}"
                   - action: "URI"
                     title: "👤 Info"
                     uri: "{{ final_person_url }}"
@@ -276,14 +285,14 @@ action:
                 tag: "person-location-{{ person_slug }}"
                 icon: "mdi:account"
                 image: "{{ notification_image }}"
-                # QA: Inject coordinates only if they exist
                 "{% if person_lat != none and person_lon != none %}latitude{% endif %}": "{{ person_lat if person_lat != none else '' }}"
                 "{% if person_lat != none and person_lon != none %}longitude{% endif %}": "{{ person_lon if person_lon != none else '' }}"
                 clickAction: "{{ raw_map_url }}"
                 actions:
                   - action: "URI"
                     title: "🗺️ Map"
-                    uri: "{{ raw_map_url }}"
+                    # QA FIX: Using the dynamic Google Maps link here
+                    uri: "{{ map_uri }}"
                   - action: "URI"
                     title: "👤 Info"
                     uri: "{{ final_person_url }}"
