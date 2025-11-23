@@ -2,7 +2,7 @@ blueprint:
   name: Battery Monitor (Smart Alert)
   description: >-
     Monitors battery sensors and sends a notification when the level drops below a set threshold.
-    QA-Verified: Uses standard MDI icons for system compatibility + Custom Branding.
+    QA-Verified: Uses standard MDI icons for system compatibility + Custom Branding image.
   source_url: https://github.com/fredamn76/homeassistant-blueprints/blob/main/automation/battery_monitor.yaml
   domain: automation
   input:
@@ -31,7 +31,7 @@ blueprint:
       default: ""
     notification_logo:
       name: Brand Logo URL
-      description: "URL to an image/logo to display in notifications (use Raw GitHub URL)."
+      description: "URL to an image/logo to display as the large banner image."
       default: "https://raw.githubusercontent.com/fredamn76/homeassistant-blueprints/main/images/logo.jpg"
       selector:
         text: {}
@@ -66,9 +66,9 @@ action:
               data:
                 tag: "battery-alert-{{ trigger.entity_id }}"
                 channel: "Battery"
-                # QA FIX: Standard MDI icon for the notification badge
+                # QA: Standard MDI icon for the notification badge
                 icon: "mdi:battery-alert"
-                # Custom branding stays as the large image
+                # Custom branding as the large image
                 image: "{{ logo_url }}"
                 push:
                   sound:
