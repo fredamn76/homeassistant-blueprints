@@ -2,7 +2,7 @@ blueprint:
   name: "Person & Zone Tracker (Life360-style)"
   description: >-
     Advanced tracking with profile pictures, GPS maps, duration logging, and privacy mode.
-    QA-Verified: Google Maps Pin Support + Strict MDI Icon Protocol.
+    QA-Verified: Correct 'notification_icon' usage + Google Maps Pin.
   domain: automation
   source_url: https://github.com/fredamn76/homeassistant-blueprints/blob/main/automation/person_zone_tracker.yaml
   input:
@@ -228,7 +228,6 @@ action:
           ""
         {% endif %}
       
-      # QA: Generate Google Maps Link with Pin
       map_uri: >-
         {% if person_lat != none and person_lon != none %}
           https://www.google.com/maps/search/?api=1&query={{ person_lat }},{{ person_lon }}
@@ -256,11 +255,11 @@ action:
                 channel: "{{ notification_channel if notification_channel != '' else none }}"
                 tag: "person-location-{{ person_slug }}"
                 
-                # QA FIX: Strict Protocol. Removed 'icon_url'.
-                icon: "mdi:account"
+                # QA FIX: Correct parameter per documentation
+                notification_icon: "mdi:account"
+                
                 image: "{{ notification_image }}"
                 
-                # Coordinates for system map features
                 "{% if person_lat != none and person_lon != none %}latitude{% endif %}": "{{ person_lat if person_lat != none else '' }}"
                 "{% if person_lat != none and person_lon != none %}longitude{% endif %}": "{{ person_lon if person_lon != none else '' }}"
                 
@@ -286,8 +285,9 @@ action:
                 channel: "{{ notification_channel if notification_channel != '' else none }}"
                 tag: "person-location-{{ person_slug }}"
                 
-                # QA FIX: Strict Protocol
-                icon: "mdi:account"
+                # QA FIX: Correct parameter per documentation
+                notification_icon: "mdi:account"
+                
                 image: "{{ notification_image }}"
                 
                 "{% if person_lat != none and person_lon != none %}latitude{% endif %}": "{{ person_lat if person_lat != none else '' }}"
