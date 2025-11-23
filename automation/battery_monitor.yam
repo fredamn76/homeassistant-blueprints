@@ -1,23 +1,22 @@
 blueprint:
-  name: 🔋 Batterivakt (Life360-stil)
+  name: Battery Monitor (Smart Alert)
   description: >-
-    Övervakar batterisensorer och skickar en notis när nivån understiger ett gränsvärde.
-    Smart logik som förhindrar spam (varnar bara när gränsen passeras).
-  
-  source_url: https://raw.githubusercontent.com/fredamn76/homeassistant-blueprints/refs/heads/main/automation/battery_monitor.yam
+    Monitors battery sensors and sends a notification when the level drops below a set threshold.
+    Includes smart logic to prevent spam (only notifies once per discharge cycle).
+  source_url: https://github.com/fredamn76/homeassistant-blueprints/blob/main/automation/battery_monitor.yaml
   domain: automation
   input:
     battery_sensors:
-      name: Batterisensorer
-      description: Välj sensorerna för de mobiler du vill övervaka (t.ex. sensor.fredriks_iphone_battery_level).
+      name: Battery Sensors
+      description: Select the battery sensors you want to monitor (e.g., sensor.iphone_battery_level).
       selector:
         entity:
           domain: sensor
           device_class: battery
           multiple: true
     threshold:
-      name: Varningsnivå (%)
-      description: Skicka notis när batteriet går under denna nivå.
+      name: Warning Threshold (%)
+      description: Trigger notification when battery drops below this level.
       default: 15
       selector:
         number:
@@ -25,14 +24,14 @@ blueprint:
           max: 100
           unit_of_measurement: "%"
     notify_service:
-      name: Notistjänst
-      description: "Exakt namn på tjänsten, t.ex. 'notify.mobile_app_fredriks_iphone'."
+      name: Notification Service
+      description: "Exact service name, e.g., 'notify.mobile_app_iphone'."
       selector:
         text: {}
       default: ""
     actions:
-      name: Extra åtgärder (Valfritt)
-      description: "T.ex. skicka TTS till Google Home: 'Fredriks batteri är lågt'."
+      name: Additional Actions (Optional)
+      description: "Run extra actions, e.g., TTS to smart speakers."
       default: []
       selector:
         action: {}
@@ -48,7 +47,7 @@ action:
       battery_level: "{{ trigger.to_state.state }}"
       notify_service: !input notify_service
   
-  # Skicka notis till mobilen (om tjänst är vald)
+  # Send notification if service is defined
   - choose:
       - conditions:
           - condition: template
@@ -56,10 +55,10 @@ action:
         sequence:
           - service: "{{ notify_service }}"
             data:
-              title: "🪫 Lågt batteri"
-              message: "{{ sensor_name }} har bara {{ battery_level }}% batteri kvar."
+              title: "🪫 Low Battery"
+              message: "{{ sensor_name }} is down to {{ battery_level }}%."
               data:
-                # Tag gör att nya notiser ersätter gamla för samma enhet
+                # Tag ensures new notifications replace old ones for the same device
                 tag: "battery-alert-{{ trigger.entity_id }}"
                 channel: "Battery"
                 push:
@@ -68,7 +67,7 @@ action:
                     critical: 0
                     volume: 0.5
 
-  # Kör eventuella extra åtgärder (t.ex. TTS)
+  # Run optional actions (e.g., TTS)
   - choose: []
     default: !input actions
 
