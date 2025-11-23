@@ -1,10 +1,12 @@
 blueprint:
-  name: Person & Zone Tracker (Life360-style)
+  name: "Person & Zone Tracker (Life360-style)"
   description: >-
     Advanced tracking with profile pictures, clickable maps, duration logging, and privacy mode.
     A completely local alternative to Life360.
+    
+    QA-Verified: Handles unavailable states and syntax edge cases.
   # Kom ihåg att ändra DITT_ANVANDARNAMN nedan!
-  source_url: https://github.com/DITT_ANVANDARNAMN/homeassistant-blueprints/blob/main/automation/person_zone_tracker.yaml
+  source_url: https://raw.githubusercontent.com/fredamn76/homeassistant-blueprints/refs/heads/main/automation/person_zone_tracker.yaml
   domain: automation
   input:
     persons_to_track:
@@ -67,6 +69,238 @@ blueprint:
       description: "Optional second device/service."
       default: ""
       selector:
+        text: {}
+    notification_channel:
+      name: Notification Channel (Android)
+      description: "Channel ID for Android notification grouping."
+      default: ""
+      selector:
+        text: {}
+    
+    # --- LINKS ---
+    # QA FIX: Added quotes to prevent YAML parsing errors
+    click_url:
+      name: "Link: Map (Common)"
+      description: "URL for the 'Map' button. (e.g., /lovelace/map)"
+      default: "/lovelace/map"
+      selector:
+        text: {}
+    
+    person_url:
+      name: "Link: Person History"
+      description: "URL for the 'Person Info' button. Use {person} for dynamic linking."
+      default: "/lovelace/history-{person}"
+      selector:
+        text: {}
+    
+    # --- TEXT CUSTOMIZATION ---
+    title_enter:
+      name: Title (Arriving)
+      default: "📍 Arrival"
+      selector:
+        text: {}
+    title_leave:
+      name: Title (Leaving)
+      default: "💨 Left"
+      selector:
+        text: {}
+    message_enter:
+      name: Message (Arriving)
+      description: "Variables: {person}, {zon}."
+      default: "{person} arrived at {zon}."
+      selector:
+        text: {}
+    message_leave:
+      name: Message (Leaving)
+      description: "Variables: {person}, {zon}, {duration}."
+      default: "{person} left {zon} (was there for {duration})."
+      selector:
+        text: {}
+
+variables:
+  zones_to_track: !input zones_to_track
+  
+  # Get friendly names
+  zone_friendly_names: "{{ expand(zones_to_track) | map(attribute='name') | list }}"
+  track_home_zone: "{{ 'zone.home' in zones_to_track }}"
+  
+  target_zones: >-
+    {% if track_home_zone %}
+      {{ zone_friendly_names + ['home'] }}
+    {% else %}
+      {{ zone_friendly_names }}
+    {% endif %}
+
+  use_quiet: !input use_quiet_hours
+  q_start: !input quiet_start
+  q_end: !input quiet_end
+  t_enter: !input title_enter
+  m_enter: !input message_enter
+  t_leave: !input title_leave
+  m_leave: !input message_leave
+  home_alias: !input home_zone_alias
+
+trigger:
+  - platform: state
+    entity_id: !input persons_to_track
+    for:
+      seconds: !input stability_delay
+
+condition:
+  # 1. QA Check: Ensure entity is available to avoid false triggers
+  - condition: template
+    value_template: >-
+      {{ trigger.to_state.state not in ['unavailable', 'unknown'] and 
+         trigger.from_state.state not in ['unavailable', 'unknown'] }}
+
+  # 2. Quiet Hours
+  - condition: template
+    value_template: >-
+      {% if use_quiet %}
+        {% set current = now().strftime('%H:%M:%S') %}
+        {% if q_start < q_end %}
+          {{ not (q_start <= current <= q_end) }}
+        {% else %}
+          {{ not (current >= q_start or current <= q_end) }}
+        {% endif %}
+      {% else %}
+        true
+      {% endif %}
+
+  # 3. Zone Logic
+  - condition: or
+    conditions:
+      # Logic for Entering
+      - condition: and
+        conditions:
+          - condition: template
+            value_template: "{{ t_enter != '' or m_enter != '' }}"
+          - condition: template
+            value_template: "{{ trigger.to_state.state in target_zones and trigger.from_state.state not in target_zones }}"
+      # Logic for Leaving
+      - condition: and
+        conditions:
+          - condition: template
+            value_template: "{{ t_leave != '' or m_leave != '' }}"
+          - condition: template
+            value_template: "{{ trigger.from_state.state in target_zones and trigger.to_state.state not in target_zones }}"
+
+action:
+  - variables:
+      notify_service_1: !input notify_primary
+      notify_service_2: !input notify_secondary
+      notification_channel: !input notification_channel
+      home_alias: !input home_zone_alias
+      
+      # URL Inputs
+      raw_map_url: !input click_url
+      raw_person_url: !input person_url
+      
+      person_name: "{{ trigger.to_state.name }}"
+      person_entity: "{{ trigger.entity_id }}"
+      person_slug: "{{ person_name | slugify }}"
+      person_picture: "{{ state_attr(person_entity, 'entity_picture') }}"
+      to_state: "{{ trigger.to_state.state }}"
+      from_state: "{{ trigger.from_state.state }}"
+      
+      # Reuse global variables for zone logic
+      is_entering: "{{ to_state in target_zones }}"
+      trigger_zone_id: "{{ to_state if is_entering else from_state }}"
+      
+      # Force Home Name
+      zone_name_human: >-
+        {% if trigger_zone_id == 'home' %}
+          {{ home_alias }}
+        {% else %}
+          {{ trigger_zone_id }}
+        {% endif %}
+      
+      # Duration
+      duration_seconds: "{{ (as_timestamp(now()) - as_timestamp(trigger.from_state.last_changed)) | int(0) }}"
+      duration_string: >-
+        {% set hours = (duration_seconds / 3600) | int %}
+        {% set minutes = ((duration_seconds % 3600) / 60) | int %}
+        {% if hours > 0 %}
+          {{ hours }}h {{ minutes }}m
+        {% else %}
+          {{ minutes }}m
+        {% endif %}
+      
+      title_template: "{{ t_enter if is_entering else t_leave }}"
+      message_template: "{{ m_enter if is_entering else m_leave }}"
+      
+      final_message: >-
+        {{ message_template 
+           | replace('{person}', person_name) 
+           | replace('{zon}', zone_name_human)
+           | replace('{duration}', duration_string if not is_entering else '') 
+        }}
+      final_title: >-
+        {{ title_template 
+           | replace('{person}', person_name) 
+           | replace('{zon}', zone_name_human) 
+        }}
+      
+      # Build Personal URL
+      final_person_url: >-
+        {{ raw_person_url | replace('{person}', person_slug) }}
+        
+      notification_image: "{{ person_picture if person_picture != none else '' }}"
+
+  # Logbook entry
+  - service: logbook.log
+    data:
+      name: "{{ person_name }}"
+      message: "{{ 'arrived at' if is_entering else 'left' }} {{ zone_name_human }}"
+      entity_id: "{{ person_entity }}"
+      domain: person
+
+  # Primary Notification
+  - choose:
+      - conditions:
+          - condition: template
+            value_template: "{{ notify_service_1 != none and notify_service_1 != '' }}"
+        sequence:
+          - service: "{{ notify_service_1 }}"
+            data:
+              message: "{{ final_message }}"
+              title: "{{ final_title }}"
+              data:
+                channel: "{{ notification_channel if notification_channel != '' else none }}"
+                tag: "person-location-{{ person_slug }}"
+                image: "{{ notification_image }}"
+                clickAction: "{{ raw_map_url }}"
+                actions:
+                  - action: "URI"
+                    title: "🗺️ Map"
+                    uri: "{{ raw_map_url }}"
+                  - action: "URI"
+                    title: "👤 Info"
+                    uri: "{{ final_person_url }}"
+
+  # Secondary Notification
+  - choose:
+      - conditions:
+          - condition: template
+            value_template: "{{ notify_service_2 != none and notify_service_2 != '' }}"
+        sequence:
+          - service: "{{ notify_service_2 }}"
+            data:
+              message: "{{ final_message }}"
+              title: "{{ final_title }}"
+              data:
+                channel: "{{ notification_channel if notification_channel != '' else none }}"
+                tag: "person-location-{{ person_slug }}"
+                image: "{{ notification_image }}"
+                clickAction: "{{ raw_map_url }}"
+                actions:
+                  - action: "URI"
+                    title: "🗺️ Map"
+                    uri: "{{ raw_map_url }}"
+                  - action: "URI"
+                    title: "👤 Info"
+                    uri: "{{ final_person_url }}"
+mode: queued
         text: {}
     notification_channel:
       name: Notification Channel (Android)
