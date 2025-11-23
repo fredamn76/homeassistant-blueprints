@@ -2,9 +2,9 @@ blueprint:
   name: "Person & Zone Tracker (Life360-style)"
   description: >-
     Advanced tracking with profile pictures, clickable maps, duration logging, and privacy mode.
-    QA-Verified: Handles unavailable states and syntax edge cases.
+    QA-Verified: Handles unavailable states, syntax edge cases, and branding fallback.
   domain: automation
-  source_url: https://raw.githubusercontent.com/fredamn76/homeassistant-blueprints/refs/heads/main/automation/person_zone_tracker.yaml
+  source_url: https://github.com/fredamn76/homeassistant-blueprints/blob/main/automation/person_zone_tracker.yaml
   input:
     persons_to_track:
       name: Persons to track
@@ -83,6 +83,13 @@ blueprint:
       selector:
         text: {}
     
+    branding_logo:
+      name: Brand Logo URL (Fallback)
+      description: "Used if the person has no profile picture. Use Raw GitHub URL."
+      default: "https://raw.githubusercontent.com/fredamn76/homeassistant-blueprints/main/images/logo.png"
+      selector:
+        text: {}
+    
     title_enter:
       name: Title (Arriving)
       default: "📍 Arrival"
@@ -122,6 +129,7 @@ variables:
   t_leave: !input title_leave
   m_leave: !input message_leave
   home_alias: !input home_zone_alias
+  branding_logo: !input branding_logo
 
 trigger:
   - platform: state
@@ -207,7 +215,16 @@ action:
         }}
       final_person_url: >-
         {{ raw_person_url | replace('{person}', person_slug) }}
-      notification_image: "{{ person_picture if person_picture != none else '' }}"
+      
+      # QA: Fallback Logic for Image
+      notification_image: >-
+        {% if person_picture != none %}
+          {{ person_picture }}
+        {% elif branding_logo != "" %}
+          {{ branding_logo }}
+        {% else %}
+          ""
+        {% endif %}
 
   - service: logbook.log
     data:
@@ -260,3 +277,4 @@ action:
                     title: "👤 Info"
                     uri: "{{ final_person_url }}"
 mode: queued
+
