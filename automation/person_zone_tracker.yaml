@@ -1,8 +1,8 @@
 blueprint:
   name: "Person & Zone Tracker (Life360-style)"
   description: >-
-    Advanced tracking with profile pictures, clickable maps, duration logging, and privacy mode.
-    QA-Verified: Uses MDI icons for notification badge to ensure Android compatibility.
+    Advanced tracking with profile pictures, GPS maps, duration logging, and privacy mode.
+    QA-Verified: Uses MDI icons for badge. Injects native GPS coordinates for map support on iOS/Android.
   domain: automation
   source_url: https://github.com/fredamn76/homeassistant-blueprints/blob/main/automation/person_zone_tracker.yaml
   input:
@@ -179,6 +179,9 @@ action:
       raw_person_url: !input person_url
       person_name: "{{ trigger.to_state.name }}"
       person_entity: "{{ trigger.entity_id }}"
+      # QA: Grab coordinates safely
+      person_lat: "{{ state_attr(person_entity, 'latitude') }}"
+      person_lon: "{{ state_attr(person_entity, 'longitude') }}"
       person_slug: "{{ person_name | slugify }}"
       person_picture: "{{ state_attr(person_entity, 'entity_picture') }}"
       to_state: "{{ trigger.to_state.state }}"
@@ -244,9 +247,12 @@ action:
               data:
                 channel: "{{ notification_channel if notification_channel != '' else none }}"
                 tag: "person-location-{{ person_slug }}"
-                # QA FIX: Use generic account icon instead of trying to force a URL
+                # QA: Standard MDI icon for status bar
                 icon: "mdi:account"
                 image: "{{ notification_image }}"
+                # QA: Inject coordinates only if they exist (safe-guard)
+                "{% if person_lat != none and person_lon != none %}latitude{% endif %}": "{{ person_lat if person_lat != none else '' }}"
+                "{% if person_lat != none and person_lon != none %}longitude{% endif %}": "{{ person_lon if person_lon != none else '' }}"
                 clickAction: "{{ raw_map_url }}"
                 actions:
                   - action: "URI"
@@ -270,6 +276,9 @@ action:
                 tag: "person-location-{{ person_slug }}"
                 icon: "mdi:account"
                 image: "{{ notification_image }}"
+                # QA: Inject coordinates only if they exist
+                "{% if person_lat != none and person_lon != none %}latitude{% endif %}": "{{ person_lat if person_lat != none else '' }}"
+                "{% if person_lat != none and person_lon != none %}longitude{% endif %}": "{{ person_lon if person_lon != none else '' }}"
                 clickAction: "{{ raw_map_url }}"
                 actions:
                   - action: "URI"
