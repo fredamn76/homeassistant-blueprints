@@ -12,6 +12,8 @@ A comprehensive battery monitoring solution that avoids spamming notifications.
 * **Reliable Icons:** Uses the standard `mdi:battery-alert` icon for the system notification badge to ensure visibility on all devices.
 * **Custom Branding:** Attaches your custom logo (or a default warning image) as the **large banner image** in the notification.
 
+[![Open your Home Assistant instance and show the blueprint import dialog with a specific blueprint URL pre-filled.](https://my.home-assistant.io/badges/blueprint_import.svg)](https://my.home-assistant.io/redirect/blueprint_import/?blueprint_url=https%3A%2F%2Fgithub.com%2Ffredamn76%2Fhomeassistant-blueprints%2Fblob%2Fmain%2Fautomation%2Fbattery_monitor.yaml)
+
 ### 2. 📍 Person & Zone Tracker (Life360-style)
 *File: `automation/person_zone_tracker.yaml`*
 
@@ -22,6 +24,8 @@ Advanced location tracking designed to replicate the best features of Life360 wi
 * **Click Actions:** Direct links to the Map or Person History dashboard.
 * **Quiet Hours:** Suppress notifications during night or specific times.
 * **Android Optimized:** Uses the standard `mdi:account` icon for the status bar to prevent rendering errors on Android devices.
+
+[![Open your Home Assistant instance and show the blueprint import dialog with a specific blueprint URL pre-filled.](https://my.home-assistant.io/badges/blueprint_import.svg)](https://my.home-assistant.io/redirect/blueprint_import/?blueprint_url=https%3A%2F%2Fgithub.com%2Ffredamn76%2Fhomeassistant-blueprints%2Fblob%2Fmain%2Fautomation%2Fperson_zone_tracker.yaml)
 
 ---
 
