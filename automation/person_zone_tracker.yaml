@@ -2,7 +2,7 @@ blueprint:
   name: "Person & Zone Tracker (Life360-style)"
   description: >-
     Advanced tracking with profile pictures, clickable maps, duration logging, and privacy mode.
-    QA-Verified: Removed broken icon override due to Android Bug #5758.
+    QA-Verified: Clean logbook history (removed duplicate logging). Android Bug #5758 workaround included.
   domain: automation
   source_url: https://github.com/fredamn76/homeassistant-blueprints/blob/main/automation/person_zone_tracker.yaml
   input:
@@ -225,12 +225,8 @@ action:
           ""
         {% endif %}
 
-  - service: logbook.log
-    data:
-      name: "{{ person_name }}"
-      message: "{{ 'arrived at' if is_entering else 'left' }} {{ zone_name_human }}"
-      entity_id: "{{ person_entity }}"
-      domain: person
+  # QA FIX: Removed duplicate logbook logging here. 
+  # Home Assistant records state changes natively.
 
   - choose:
       - conditions:
@@ -244,7 +240,6 @@ action:
               data:
                 channel: "{{ notification_channel if notification_channel != '' else none }}"
                 tag: "person-location-{{ person_slug }}"
-                # QA FIX: Removed 'icon' field
                 image: "{{ notification_image }}"
                 clickAction: "{{ raw_map_url }}"
                 actions:
@@ -267,7 +262,6 @@ action:
               data:
                 channel: "{{ notification_channel if notification_channel != '' else none }}"
                 tag: "person-location-{{ person_slug }}"
-                # QA FIX: Removed 'icon' field
                 image: "{{ notification_image }}"
                 clickAction: "{{ raw_map_url }}"
                 actions:
