@@ -3,7 +3,7 @@ blueprint:
   description: >-
     FIX v1.9.1: Syntax-städning och fix av variabelnamn för länkar.
     Avancerad spårning med bilder, klickbar karta, tidsåtgång och loggbok.
-  source_url: https://gist.githubusercontent.com/fredamn76/6775a8f2ade26f5f54a43d64632eaa49/raw/person_zone_tracker.yaml
+  source_url: https://raw.githubusercontent.com/fredamn76/homeassistant-blueprints/refs/heads/main/automation/person_zone_tracker.yaml
   domain: automation
   input:
     persons_to_track:
