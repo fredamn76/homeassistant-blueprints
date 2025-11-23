@@ -1,8 +1,8 @@
 blueprint:
   name: "Person & Zone Tracker (Life360-style)"
   description: >-
-    Advanced tracking with profile pictures, GPS maps, duration logging, and privacy mode.
-    QA-Verified: Correct 'notification_icon' usage + Google Maps Pin.
+    Advanced tracking with profile pictures, clickable maps, duration logging, and privacy mode.
+    QA-Verified: Removed broken icon override due to Android Bug #5758.
   domain: automation
   source_url: https://github.com/fredamn76/homeassistant-blueprints/blob/main/automation/person_zone_tracker.yaml
   input:
@@ -72,8 +72,7 @@ blueprint:
         text: {}
     
     click_url:
-      name: "Link: Dashboard Map"
-      description: "Default action when clicking the notification body."
+      name: "Link: Map (Common)"
       default: "/lovelace/map"
       selector:
         text: {}
@@ -180,8 +179,6 @@ action:
       raw_person_url: !input person_url
       person_name: "{{ trigger.to_state.name }}"
       person_entity: "{{ trigger.entity_id }}"
-      person_lat: "{{ state_attr(person_entity, 'latitude') }}"
-      person_lon: "{{ state_attr(person_entity, 'longitude') }}"
       person_slug: "{{ person_name | slugify }}"
       person_picture: "{{ state_attr(person_entity, 'entity_picture') }}"
       to_state: "{{ trigger.to_state.state }}"
@@ -227,13 +224,6 @@ action:
         {% else %}
           ""
         {% endif %}
-      
-      map_uri: >-
-        {% if person_lat != none and person_lon != none %}
-          https://www.google.com/maps/search/?api=1&query={{ person_lat }},{{ person_lon }}
-        {% else %}
-          {{ raw_map_url }}
-        {% endif %}
 
   - service: logbook.log
     data:
@@ -254,20 +244,13 @@ action:
               data:
                 channel: "{{ notification_channel if notification_channel != '' else none }}"
                 tag: "person-location-{{ person_slug }}"
-                
-                # QA FIX: Correct parameter per documentation
-                notification_icon: "mdi:account"
-                
+                # QA FIX: Removed 'icon' field
                 image: "{{ notification_image }}"
-                
-                "{% if person_lat != none and person_lon != none %}latitude{% endif %}": "{{ person_lat if person_lat != none else '' }}"
-                "{% if person_lat != none and person_lon != none %}longitude{% endif %}": "{{ person_lon if person_lon != none else '' }}"
-                
                 clickAction: "{{ raw_map_url }}"
                 actions:
                   - action: "URI"
                     title: "🗺️ Map"
-                    uri: "{{ map_uri }}"
+                    uri: "{{ raw_map_url }}"
                   - action: "URI"
                     title: "👤 Info"
                     uri: "{{ final_person_url }}"
@@ -284,20 +267,13 @@ action:
               data:
                 channel: "{{ notification_channel if notification_channel != '' else none }}"
                 tag: "person-location-{{ person_slug }}"
-                
-                # QA FIX: Correct parameter per documentation
-                notification_icon: "mdi:account"
-                
+                # QA FIX: Removed 'icon' field
                 image: "{{ notification_image }}"
-                
-                "{% if person_lat != none and person_lon != none %}latitude{% endif %}": "{{ person_lat if person_lat != none else '' }}"
-                "{% if person_lat != none and person_lon != none %}longitude{% endif %}": "{{ person_lon if person_lon != none else '' }}"
-                
                 clickAction: "{{ raw_map_url }}"
                 actions:
                   - action: "URI"
                     title: "🗺️ Map"
-                    uri: "{{ map_uri }}"
+                    uri: "{{ raw_map_url }}"
                   - action: "URI"
                     title: "👤 Info"
                     uri: "{{ final_person_url }}"
