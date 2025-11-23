@@ -1,0 +1,76 @@
+blueprint:
+  name: 🔋 Batterivakt (Life360-stil)
+  description: >-
+    Övervakar batterisensorer och skickar en notis när nivån understiger ett gränsvärde.
+    Smart logik som förhindrar spam (varnar bara när gränsen passeras).
+  
+  source_url: https://github.com/DITT_ANVANDARNAMN/homeassistant-blueprints/blob/main/automation/battery_monitor.yaml
+  domain: automation
+  input:
+    battery_sensors:
+      name: Batterisensorer
+      description: Välj sensorerna för de mobiler du vill övervaka (t.ex. sensor.fredriks_iphone_battery_level).
+      selector:
+        entity:
+          domain: sensor
+          device_class: battery
+          multiple: true
+    threshold:
+      name: Varningsnivå (%)
+      description: Skicka notis när batteriet går under denna nivå.
+      default: 15
+      selector:
+        number:
+          min: 1
+          max: 100
+          unit_of_measurement: "%"
+    notify_service:
+      name: Notistjänst
+      description: "Exakt namn på tjänsten, t.ex. 'notify.mobile_app_fredriks_iphone'."
+      selector:
+        text: {}
+      default: ""
+    actions:
+      name: Extra åtgärder (Valfritt)
+      description: "T.ex. skicka TTS till Google Home: 'Fredriks batteri är lågt'."
+      default: []
+      selector:
+        action: {}
+
+trigger:
+  - platform: numeric_state
+    entity_id: !input battery_sensors
+    below: !input threshold
+
+action:
+  - variables:
+      sensor_name: "{{ trigger.to_state.name }}"
+      battery_level: "{{ trigger.to_state.state }}"
+      notify_service: !input notify_service
+  
+  # Skicka notis till mobilen (om tjänst är vald)
+  - choose:
+      - conditions:
+          - condition: template
+            value_template: "{{ notify_service != '' }}"
+        sequence:
+          - service: "{{ notify_service }}"
+            data:
+              title: "🪫 Lågt batteri"
+              message: "{{ sensor_name }} har bara {{ battery_level }}% batteri kvar."
+              data:
+                # Tag gör att nya notiser ersätter gamla för samma enhet
+                tag: "battery-alert-{{ trigger.entity_id }}"
+                channel: "Battery"
+                push:
+                  sound:
+                    name: default
+                    critical: 0
+                    volume: 0.5
+
+  # Kör eventuella extra åtgärder (t.ex. TTS)
+  - choose: []
+    default: !input actions
+
+mode: parallel
+max: 10
