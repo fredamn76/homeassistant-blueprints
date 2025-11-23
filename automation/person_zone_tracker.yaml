@@ -2,7 +2,7 @@ blueprint:
   name: "Person & Zone Tracker (Life360-style)"
   description: >-
     Advanced tracking with profile pictures, clickable maps, duration logging, and privacy mode.
-    QA-Verified: Handles unavailable states, syntax edge cases, and branding fallback (Face -> Logo).
+    QA-Verified: Uses MDI icons for notification badge to ensure Android compatibility.
   domain: automation
   source_url: https://github.com/fredamn76/homeassistant-blueprints/blob/main/automation/person_zone_tracker.yaml
   input:
@@ -216,7 +216,6 @@ action:
       final_person_url: >-
         {{ raw_person_url | replace('{person}', person_slug) }}
       
-      # QA: Fallback Logic. 1. Face, 2. Logo, 3. None
       notification_image: >-
         {% if person_picture != none %}
           {{ person_picture }}
@@ -245,8 +244,8 @@ action:
               data:
                 channel: "{{ notification_channel if notification_channel != '' else none }}"
                 tag: "person-location-{{ person_slug }}"
-                # QA: Set both icon and image to ensure branding visibility
-                icon: "{{ notification_image }}"
+                # QA FIX: Use generic account icon instead of trying to force a URL
+                icon: "mdi:account"
                 image: "{{ notification_image }}"
                 clickAction: "{{ raw_map_url }}"
                 actions:
@@ -269,8 +268,7 @@ action:
               data:
                 channel: "{{ notification_channel if notification_channel != '' else none }}"
                 tag: "person-location-{{ person_slug }}"
-                # QA: Set both icon and image to ensure branding visibility
-                icon: "{{ notification_image }}"
+                icon: "mdi:account"
                 image: "{{ notification_image }}"
                 clickAction: "{{ raw_map_url }}"
                 actions:
