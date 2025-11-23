@@ -7,42 +7,42 @@
   <img src="https://raw.githubusercontent.com/fredamn76/homeassistant-blueprints/main/images/logo.jpg" width="150" alt="Logo">
 </p>
 
-En komplett, helt lokal ersättare till Life360 för Home Assistant. Denna svit av blueprints ger dig avancerad platsövervakning med snygga notiser och hjälper dig samtidigt att hålla koll på enheternas batterinivåer.
+A complete, **privacy-first** and fully local alternative to Life360 for Home Assistant. This suite provides advanced location tracking with rich notifications and ensures your devices stay powered up.
 
 ---
 
-## 1. 🌍 Person & Zone Tracker (Main)
-Detta är kärnan i systemet. En avancerad automation som håller koll på vem som kommer och går, med fokus på integritet och design.
+## 1. 🌍 Person & Zone Tracker (Core)
+The heart of the system. An advanced automation blueprint designed to track arrivals and departures with precision, style, and reliability.
 
-**Funktioner:**
-* 📸 **Dynamiska Notiser:** Visar profilbild på den som kommer/går (med fallback till logotyp).
-* 📍 **Klickbara Kartor:** Öppna direkt kartan för att se var personen är.
-* ⏱️ **Tidsloggning:** "Var borta i 4h 20m" vid avfärd.
-* 🛡️ **Smart Logik:** Hanterar "flapping" (GPS-drift) och ignorerar enheter som är otillgängliga.
-* 🤫 **Privacy & Quiet Mode:** Stäng av notiser på natten.
+**Key Features:**
+* 📸 **Dynamic Notifications:** Displays the user's profile picture (with smart fallback to a brand logo).
+* 📍 **Clickable Maps:** Open the location map directly from the notification action.
+* ⏱️ **Duration Logging:** Tracks time spent at a location (e.g., "Left Work after 8h 30m").
+* 🛡️ **Defensive Logic:** Handles GPS drift ("flapping") and gracefully ignores unavailable/unknown states.
+* 🤫 **Privacy & Quiet Mode:** Configurable quiet hours to mute notifications at night.
 
 [![Import Person Tracker](https://my.home-assistant.io/badges/blueprint_import.svg)](https://my.home-assistant.io/redirect/blueprint_import/?blueprint_url=https://github.com/fredamn76/homeassistant-blueprints/blob/main/automation/person_zone_tracker.yaml)
 
 ---
 
 ## 2. 🔋 Battery Monitor (Smart Add-on)
-För att tracking ska fungera måste telefonen ha ström. Denna "Smart Alert" varnar dig innan det är för sent.
+Reliable tracking requires power. This "Smart Alert" blueprint monitors your devices and warns you before they go dark.
 
-**Funktioner:**
-* 🧠 **Spam-skydd:** Varnar endast en gång per urladdningscykel (inte var 5:e minut).
-* 📱 **Anpassad Branding:** Använder samma logotyp och designspråk som trackern.
-* ⚙️ **QA-Säkrad:** Fungerar även om många enheter rapporterar samtidigt.
+**Key Features:**
+* 🧠 **Anti-Spam Logic:** Intelligently alerts only **once** per discharge cycle (prevents constant nagging).
+* 📱 **Unified Branding:** Uses the same visual identity and logo as the Tracker.
+* ⚙️ **QA-Verified:** Optimized `parallel` execution to handle multiple devices reporting simultaneously without errors.
 
 [![Import Battery Monitor](https://my.home-assistant.io/badges/blueprint_import.svg)](https://my.home-assistant.io/redirect/blueprint_import/?blueprint_url=https://github.com/fredamn76/homeassistant-blueprints/blob/main/automation/battery_monitor.yaml)
 
 ---
 
-## 🛠️ Installation & Krav
+## 🛠️ Installation & Requirements
 
-1. Se till att du har **Home Assistant Companion App** installerad på telefonerna.
-2. Klicka på "Import blueprint"-knapparna ovan.
-3. Skapa en automation från respektive blueprint.
-4. (Valfritt) Ladda upp en egen logotyp eller använd vår standard.
+1. Ensure the **Home Assistant Companion App** is installed on your devices.
+2. Click the **"Import Blueprint"** badges above.
+3. Create an automation from each blueprint.
+4. **(Optional):** The blueprints will automatically use the hosted logo. You can override this in the blueprint settings if you prefer your own image.
 
 ---
 *QA-Tested on Home Assistant Core 2024.x and Android/iOS Companion Apps.*
