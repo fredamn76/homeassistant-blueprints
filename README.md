@@ -46,3 +46,7 @@ Reliable tracking requires power. This "Smart Alert" blueprint monitors your dev
 
 ---
 *QA-Tested on Home Assistant Core 2024.x and Android/iOS Companion Apps.*
+
+## 🤖 Acknowlegements
+This project was developed in collaboration with AI tools to ensure high code quality, robust error handling, and comprehensive documentation.
+
