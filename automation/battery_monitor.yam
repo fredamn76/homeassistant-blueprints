@@ -4,7 +4,7 @@ blueprint:
     Övervakar batterisensorer och skickar en notis när nivån understiger ett gränsvärde.
     Smart logik som förhindrar spam (varnar bara när gränsen passeras).
   
-  source_url: https://github.com/DITT_ANVANDARNAMN/homeassistant-blueprints/blob/main/automation/battery_monitor.yaml
+  source_url: https://raw.githubusercontent.com/fredamn76/homeassistant-blueprints/refs/heads/main/automation/battery_monitor.yam
   domain: automation
   input:
     battery_sensors:
