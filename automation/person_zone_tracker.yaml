@@ -4,7 +4,7 @@ blueprint:
     Advanced tracking with profile pictures, clickable maps, duration logging, and privacy mode.
     QA-Verified: Handles unavailable states and syntax edge cases.
   domain: automation
-  source_url: https://github.com/DITT_ANVANDARNAMN/homeassistant-blueprints/blob/main/automation/person_zone_tracker.yaml
+  source_url: https://raw.githubusercontent.com/fredamn76/homeassistant-blueprints/refs/heads/main/automation/person_zone_tracker.yaml
   input:
     persons_to_track:
       name: Persons to track
