@@ -45,6 +45,23 @@ Reliable tracking requires power. This "Smart Alert" blueprint monitors your dev
 4. **(Optional):** The blueprints will automatically use the hosted logo. You can override this in the blueprint settings if you prefer your own image.
 
 ---
+
+## 📱 Bonus: Dashboard View
+We have included a pre-configured dashboard view (YAML) tailored for this tracker suite. It features a status overview, battery monitoring, timeline, and a Google Map history view.
+
+**Preview:**
+The dashboard is designed for the "Sections" layout and is fully responsive.
+
+**Requirements (HACS):**
+* [Google Maps Card](https://github.com/kreativ-monkey/hass-google-map-card) (Required for history map)
+* [card-mod](https://github.com/thomasloven/lovelace-card-mod) (Required for text styling)
+
+**Download:**
+[View Dashboard YAML](https://github.com/fredamn76/homeassistant-blueprints/blob/main/dashboards/person_tracker_view.yaml)
+
+*Note: You need your own Google Maps API Key for the map card to work.*
+
+---
 *QA-Tested on Home Assistant Core 2024.x and Android/iOS Companion Apps.*
 
 ## 🤖 Acknowlegements
