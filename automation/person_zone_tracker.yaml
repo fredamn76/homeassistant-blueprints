@@ -1,0 +1,295 @@
+blueprint:
+  name: Person- och Zon-bevakare (Life360-stil)
+  description: >-
+    FIX v1.9.1: Syntax-städning och fix av variabelnamn för länkar.
+    Avancerad spårning med bilder, klickbar karta, tidsåtgång och loggbok.
+  source_url: https://gist.githubusercontent.com/fredamn76/6775a8f2ade26f5f54a43d64632eaa49/raw/person_zone_tracker.yaml
+  domain: automation
+  input:
+    persons_to_track:
+      name: Personer att bevaka
+      selector:
+        entity:
+          domain: person
+          multiple: true
+    zones_to_track:
+      name: Zoner att bevaka
+      selector:
+        entity:
+          domain: zone
+          multiple: true
+    
+    home_zone_alias:
+      name: Namn för Hemma-zonen
+      description: "Vad ska det stå i notisen när man är hemma? (T.ex. 'Hemma')"
+      default: "Hemma"
+      selector:
+        text: {}
+
+    stability_delay:
+      name: Fördröjning (sekunder)
+      description: "Motverkar falska larm vid GPS-fladder."
+      default: 0
+      selector:
+        number:
+          min: 0
+          max: 300
+          unit_of_measurement: seconds
+    
+    use_quiet_hours:
+      name: Aktivera Tysta Timmar?
+      default: false
+      selector:
+        boolean: {}
+    quiet_start:
+      name: Starttid (Tystnad)
+      default: "23:00:00"
+      selector:
+        time: {}
+    quiet_end:
+      name: Sluttid (Tystnad)
+      default: "06:00:00"
+      selector:
+        time: {}
+
+    notify_primary:
+      name: Primär notistjänst
+      default: ""
+      selector:
+        text: {}
+    notify_secondary:
+      name: Sekundär notistjänst
+      default: ""
+      selector:
+        text: {}
+    notification_channel:
+      name: Android Kanal (Valfritt)
+      default: ""
+      selector:
+        text: {}
+    
+    # --- LÄNKAR ---
+    click_url:
+      name: Länk Karta (Gemensam)
+      description: "Länk för knappen Karta. (T.ex. /lovelace/karta)"
+      default: "/lovelace/karta"
+      selector:
+        text: {}
+    
+    person_url:
+      name: Länk Person info
+      description: "Länk för knappen Person info. Använd {person} för att matcha namnet."
+      default: "/lovelace/person-{person}"
+      selector:
+        text: {}
+    
+    title_enter:
+      name: Titel vid ankomst
+      default: "📍 Ankomst"
+      selector:
+        text: {}
+    title_leave:
+      name: Titel vid lämnande
+      default: "💨 Lämnat"
+      selector:
+        text: {}
+    message_enter:
+      name: Meddelande vid ankomst
+      default: "{person} anlände till {zon}."
+      selector:
+        text: {}
+    message_leave:
+      name: Meddelande vid lämnande
+      default: "{person} lämnade {zon} (varit där i {duration})."
+      selector:
+        text: {}
+
+variables:
+  zones_to_track: !input zones_to_track
+  
+  # Hämta riktiga namn
+  zone_friendly_names: "{{ expand(zones_to_track) | map(attribute='name') | list }}"
+  track_home_zone: "{{ 'zone.home' in zones_to_track }}"
+  
+  target_zones: >-
+    {% if track_home_zone %}
+      {{ zone_friendly_names + ['home'] }}
+    {% else %}
+      {{ zone_friendly_names }}
+    {% endif %}
+
+  use_quiet: !input use_quiet_hours
+  q_start: !input quiet_start
+  q_end: !input quiet_end
+  t_enter: !input title_enter
+  m_enter: !input message_enter
+  t_leave: !input title_leave
+  m_leave: !input message_leave
+  home_alias: !input home_zone_alias
+
+trigger:
+  - platform: state
+    entity_id: !input persons_to_track
+    for:
+      seconds: !input stability_delay
+
+condition:
+  # 1. Tysta Timmar
+  - condition: template
+    value_template: >-
+      {% if use_quiet %}
+        {% set current = now().strftime('%H:%M:%S') %}
+        {% if q_start < q_end %}
+          {{ not (q_start <= current <= q_end) }}
+        {% else %}
+          {{ not (current >= q_start or current <= q_end) }}
+        {% endif %}
+      {% else %}
+        true
+      {% endif %}
+
+  # 2. Logik för Zon In/Ut
+  - condition: or
+    conditions:
+      # Logic for Entering
+      - condition: and
+        conditions:
+          - condition: template
+            value_template: "{{ t_enter != '' or m_enter != '' }}"
+          - condition: template
+            value_template: "{{ trigger.to_state.state in target_zones and trigger.from_state.state not in target_zones }}"
+      # Logic for Leaving
+      - condition: and
+        conditions:
+          - condition: template
+            value_template: "{{ t_leave != '' or m_leave != '' }}"
+          - condition: template
+            value_template: "{{ trigger.from_state.state in target_zones and trigger.to_state.state not in target_zones }}"
+
+action:
+  - variables:
+      notify_service_1: !input notify_primary
+      notify_service_2: !input notify_secondary
+      notification_channel: !input notification_channel
+      home_alias: !input home_zone_alias
+      
+      # URL Inputs (Här var felet i v1.9.0)
+      raw_map_url: !input click_url
+      raw_person_url: !input person_url
+      
+      person_name: "{{ trigger.to_state.name }}"
+      person_entity: "{{ trigger.entity_id }}"
+      person_slug: "{{ person_name | slugify }}"
+      person_picture: "{{ state_attr(person_entity, 'entity_picture') }}"
+      to_state: "{{ trigger.to_state.state }}"
+      from_state: "{{ trigger.from_state.state }}"
+      
+      # Återskapa zon-logik
+      zones_to_track: !input zones_to_track
+      zone_friendly_names: "{{ expand(zones_to_track) | map(attribute='name') | list }}"
+      track_home_zone: "{{ 'zone.home' in zones_to_track }}"
+      target_zones: >-
+        {% if track_home_zone %}
+          {{ zone_friendly_names + ['home'] }}
+        {% else %}
+          {{ zone_friendly_names }}
+        {% endif %}
+
+      is_entering: "{{ to_state in target_zones }}"
+      trigger_zone_id: "{{ to_state if is_entering else from_state }}"
+      
+      # TVINGA NAMN
+      zone_name_human: >-
+        {% if trigger_zone_id == 'home' %}
+          {{ home_alias }}
+        {% else %}
+          {{ trigger_zone_id }}
+        {% endif %}
+      
+      # Duration
+      duration_seconds: "{{ (as_timestamp(now()) - as_timestamp(trigger.from_state.last_changed)) | int(0) }}"
+      duration_string: >-
+        {% set hours = (duration_seconds / 3600) | int %}
+        {% set minutes = ((duration_seconds % 3600) / 60) | int %}
+        {% if hours > 0 %}
+          {{ hours }} tim {{ minutes }} min
+        {% else %}
+          {{ minutes }} min
+        {% endif %}
+      
+      title_template: "{{ t_enter if is_entering else t_leave }}"
+      message_template: "{{ m_enter if is_entering else m_leave }}"
+      
+      final_message: >-
+        {{ message_template 
+           | replace('{person}', person_name) 
+           | replace('{zon}', zone_name_human)
+           | replace('{duration}', duration_string if not is_entering else '') 
+        }}
+      final_title: >-
+        {{ title_template 
+           | replace('{person}', person_name) 
+           | replace('{zon}', zone_name_human) 
+        }}
+      
+      # Bygg personlig URL
+      final_person_url: >-
+        {{ raw_person_url | replace('{person}', person_slug) }}
+        
+      notification_image: "{{ person_picture if person_picture != none else '' }}"
+
+  # Loggbok
+  - service: logbook.log
+    data:
+      name: "{{ person_name }}"
+      message: "{{ 'anlände till' if is_entering else 'lämnade' }} {{ zone_name_human }}"
+      entity_id: "{{ person_entity }}"
+      domain: person
+
+  # Primär tjänst
+  - choose:
+      - conditions:
+          - condition: template
+            value_template: "{{ notify_service_1 != none and notify_service_1 != '' }}"
+        sequence:
+          - service: "{{ notify_service_1 }}"
+            data:
+              message: "{{ final_message }}"
+              title: "{{ final_title }}"
+              data:
+                channel: "{{ notification_channel if notification_channel != '' else none }}"
+                tag: "person-location-{{ person_slug }}"
+                image: "{{ notification_image }}"
+                # Huvudklicket leder till kartan
+                clickAction: "{{ raw_map_url }}"
+                actions:
+                  - action: "URI"
+                    title: "🗺️ Karta"
+                    uri: "{{ raw_map_url }}"
+                  - action: "URI"
+                    title: "👤 Person info"
+                    uri: "{{ final_person_url }}"
+
+  # Sekundär tjänst
+  - choose:
+      - conditions:
+          - condition: template
+            value_template: "{{ notify_service_2 != none and notify_service_2 != '' }}"
+        sequence:
+          - service: "{{ notify_service_2 }}"
+            data:
+              message: "{{ final_message }}"
+              title: "{{ final_title }}"
+              data:
+                channel: "{{ notification_channel if notification_channel != '' else none }}"
+                tag: "person-location-{{ person_slug }}"
+                image: "{{ notification_image }}"
+                clickAction: "{{ raw_map_url }}"
+                actions:
+                  - action: "URI"
+                    title: "🗺️ Karta"
+                    uri: "{{ raw_map_url }}"
+                  - action: "URI"
+                    title: "👤 Person info"
+                    uri: "{{ final_person_url }}"
+mode: queued
