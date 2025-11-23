@@ -1,0 +1,126 @@
+type: sections
+max_columns: 4
+title: 📍 Spårning - Namn
+path: tracking-name
+icon: mdi:map-marker-radius
+sections:
+  # --- STATUS SECTION ---
+  - type: grid
+    column_span: 1
+    cards:
+      - type: heading
+        heading: Status
+      - type: tile
+        entity: person.your_name  # <--- PLACEHOLDER
+        name: Namn
+        icon: mdi:account
+        color: blue
+        show_entity_picture: true
+        hide_state: false
+        vertical: false
+        features_position: bottom
+      - type: tile
+        entity: sensor.your_device_battery_level  # <--- PLACEHOLDER
+        name: Batteri
+        icon: mdi:battery
+        color: green
+        vertical: false
+      - type: tile
+        entity: sensor.your_device_geocoded_location  # <--- PLACEHOLDER
+        name: Nuvarande Plats
+        icon: mdi:map-marker
+        color: orange
+        hide_state: false
+        vertical: false
+        features_position: bottom
+        card_mod:
+          style: |
+            ha-card .content { 
+              white-space: normal !important; 
+              line-height: 1.2 !important;
+              font-size: 13px !important; 
+            }
+        grid_options:
+          columns: 12
+          rows: 1
+
+  # --- MAP SECTION ---
+  - type: grid
+    column_span: 2
+    cards:
+      - type: heading
+        heading: Resväg (24h)
+      - type: custom:google-map-card
+        api_key: "YOUR_GOOGLE_MAPS_API_KEY" # <--- VIKTIGT: Ersätts av användaren
+        cameraControl: false
+        zoomControl: true
+        zoomControl_position: RIGHT_BOTTOM
+        streetViewControl: false
+        fullscreenControl: true
+        fullscreenControl_position: TOP_RIGHT
+        mapTypeControl: true
+        mapTypeControl_position: TOP_LEFT
+        rotateControl: true
+        rotateControl_position: LEFT_BOTTOM
+        show_traffic_button: true
+        show_traffic_button_position: TOP_RIGHT
+        show_weather_button: false
+        show_recenter_button: true
+        show_recenter_button_position: LEFT_BOTTOM
+        show_datepicker_button: false
+        buttons_opacity: 1
+        showScale: true
+        keyboardShortcuts: true
+        gesture_handling: cooperative
+        marker_clustering: true
+        proximity_clustering: false
+        proximity_radius: 150
+        spiderfy: true
+        show_traffic: false
+        weather_layer: clouds_new
+        
+        # QA: Rensat specifika zoner för integritet. Endast exempel kvar.
+        zones:
+          zone.home:
+            show: true
+            color: "#2ecc71"
+            follow: false
+            label_color: "#c4dbf9"
+          zone.work:
+            show: true
+            color: "#3498db"
+            follow: false
+            label_color: "#c4dbf9"
+            
+        zoom: 16
+        map_type: satellite
+        entities:
+          - entity: person.your_name # <--- PLACEHOLDER
+            icon_size: 20
+            polyline_color: "#ffffff"
+            polyline_width: 1
+            icon_color: "#780202"
+            background_color: "#ffffff"
+            follow: true
+            show_history_dots: true
+            hours_to_show: 24 # QA: Ändrat från 0 till 24 för att garantera att spår syns i mallen
+            history_start_date: null
+            history_end_date: null
+        title: ""
+        hours_to_show: 24
+        history_start: 24 hours ago
+        grid_options:
+          columns: 12
+          rows: 3
+
+  # --- TIMELINE SECTION ---
+  - type: grid
+    cards:
+      - type: heading
+        heading: Tidslinje
+      - type: logbook
+        entities:
+          - person.your_name # <--- PLACEHOLDER
+        hours_to_show: 24
+        title: ""
+cards: []
