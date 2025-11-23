@@ -31,7 +31,7 @@ Reliable tracking requires power. This "Smart Alert" blueprint monitors your dev
 **Key Features:**
 * 🧠 **Anti-Spam Logic:** Intelligently alerts only **once** per discharge cycle (prevents constant nagging).
 * 📱 **Unified Branding:** Uses the same visual identity and logo as the Tracker.
-* ⚙️ **QA-Verified:** Optimized `parallel` execution to handle multiple devices reporting simultaneously without errors.
+
 
 [![Import Battery Monitor](https://my.home-assistant.io/badges/blueprint_import.svg)](https://my.home-assistant.io/redirect/blueprint_import/?blueprint_url=https://github.com/fredamn76/homeassistant-blueprints/blob/main/automation/battery_monitor.yaml)
 
