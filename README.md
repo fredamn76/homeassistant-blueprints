@@ -103,4 +103,16 @@ When you copy the [dashboard YAML code](dashboards/person_tracker_view.yaml), yo
 4. **(Optional) Dashboard:** Copy the dashboard YAML code to a new view in your Lovelace dashboard.
 
 ---
+
+## ❓ Troubleshooting
+
+**Issue: History or Logbook is empty/inconsistent.**
+If your person entity updates are missing from the logbook, it is often due to phone battery optimizations killing the Home Assistant app in the background.
+
+**Fix for Android (Pixel/Samsung):**
+1. Go to **Settings** -> **Apps** -> **Home Assistant**.
+2. Tap **Battery**.
+3. Change setting to **Unrestricted** (or "Don't optimize").
+4. Ensure **Location** permission is set to **"Allow all the time"**.
+---
 *Developed with ❤️ and 🤖 using AI-assisted coding & QA.*
