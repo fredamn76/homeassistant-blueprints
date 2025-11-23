@@ -1,48 +1,43 @@
 # 🏠 Home Assistant Blueprints
 
-Här samlar jag mina skräddarsydda blueprints för ett smartare hem. Alla blueprints är designade för att vara robusta, användarvänliga för hela familjen och enkla att installera.
+A collection of custom-made blueprints for a smarter home. Designed to be robust, family-friendly, and easy to install.
 
 ---
 
-## 🤖 Automationer
+## 🤖 Automations
 
-### 1. 📍 [Person- och Zon-bevakare (Life360-ersättare)](automation/person_zone_tracker.yaml)
-*Det ultimata alternativet till Life360. Spåra familjen med snygga notiser, bilder och historik.*
+### 1. 📍 [Person & Zone Tracker (Life360 Alternative)](automation/person_zone_tracker.yaml)
+*The ultimate privacy-focused alternative to Life360. Track family members with rich notifications, images, and history.*
 
-**Funktioner:**
-* 📸 **Profilbilder:** Visar personens bild direkt i notisen.
-* ⏱️ **Tidsloggning:** *"Lämnade Jobbet (varit där i 8h 30min)"*.
-* 🗺️ **Klickbara länkar:** Knappar för "Karta" och "Personhistorik".
-* 🌙 **Nattläge:** Tysta timmar så ingen väcks i onödan.
-* 🏠 **Smart Namn:** Visar "Hemma" istället för systemets "home".
+**Features:**
+* 📸 **Rich Notifications:** Displays the person's profile picture directly in the notification.
+* ⏱️ **Duration Logging:** *"Left Work (was there for 8h 30m)"*.
+* 🗺️ **Action Buttons:** Direct links to "Map" and "Person History".
+* 🌙 **Quiet Hours:** Built-in privacy mode to stop notifications at night.
+* 🏠 **Smart Naming:** Automatically handles the system "home" state and displays "Home" (or custom alias).
 
-[![Importera till Home Assistant](https://my.home-assistant.io/badges/blueprint_import.svg)](https://my.home-assistant.io/redirect/blueprint_import/?blueprint_url=https%3A%2F%2Fgithub.com%2Ffredamn76%2Fhomeassistant-blueprints%2Fblob%2Fmain%2Fautomation%2Fperson_zone_tracker.yaml)
+[![Open your Home Assistant instance and show the blueprint import dialog with a specific blueprint URL pre-filled.](https://my.home-assistant.io/badges/blueprint_import.svg)](https://my.home-assistant.io/redirect/blueprint_import/?blueprint_url=https%3A%2F%2Fgithub.com%2Ffredamn76%2Fhomeassistant-blueprints%2Fblob%2Fmain%2Fautomation%2Fperson_zone_tracker.yaml)
 
 ---
 
-### 2. 🔋 [Batterivakt (Smart Varning)](automation/battery_monitor.yaml)
-*Få en varning innan telefonen eller surfplattan dör. Smart logik som inte spammar.*
+### 2. 🔋 [Battery Monitor (Smart Alert)](automation/battery_monitor.yaml)
+*Get warned before phones or tablets run out of battery. Intelligent logic prevents spam.*
 
-**Funktioner:**
-* 📉 **Tröskelvärde:** Välj själv när du vill varnas (t.ex. under 15%).
-* 🛡️ **Spam-skydd:** Skickar bara en notis per urladdning (när gränsen passeras).
-* 📱 **Enkelt val:** Peka bara ut vilka sensorer du vill övervaka.
+**Features:**
+* 📉 **Custom Threshold:** Choose when you want to be warned (e.g., below 15%).
+* 🛡️ **Anti-Spam:** Only sends one notification per discharge cycle (when threshold is crossed).
+* 📱 **Simple Setup:** Just select the sensors you want to monitor.
 
-[![Importera till Home Assistant](https://my.home-assistant.io/badges/blueprint_import.svg)](https://my.home-assistant.io/redirect/blueprint_import/?blueprint_url=https%3A%2F%2Fgithub.com%2Ffredamn76%2Fhomeassistant-blueprints%2Fblob%2Fmain%2Fautomation%2Fbattery_monitor.yaml)
+[![Open your Home Assistant instance and show the blueprint import dialog with a specific blueprint URL pre-filled.](https://my.home-assistant.io/badges/blueprint_import.svg)](https://my.home-assistant.io/redirect/blueprint_import/?blueprint_url=https%3A%2F%2Fgithub.com%2Ffredamn76%2Fhomeassistant-blueprints%2Fblob%2Fmain%2Fautomation%2Fbattery_monitor.yaml)
 
 ---
 
 ## 🚀 Installation
 
-1. Klicka på **Import-knappen** ovan för den blueprint du vill ha.
-2. Din Home Assistant öppnas och frågar om du vill importera.
-3. Klicka på **Förhandsgranska** och sedan **Importera**.
-4. Skapa en ny automation baserad på blueprinten!
+1. Click the **Import button** above for the blueprint you want.
+2. Your Home Assistant instance will open and ask to import.
+3. Click **Preview** and then **Import**.
+4. Create a new automation using the blueprint!
 
 ---
-*Skapad och underhållen av @fredamn76.*
-3. Klicka på **Förhandsgranska** och sedan **Importera**.
-4. Skapa en ny automation baserad på blueprinten!
-
----
-*Skapad och underhållen av @fredamn76.*
+*Created and maintained by @fredamn76.*
