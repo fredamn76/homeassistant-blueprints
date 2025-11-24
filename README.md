@@ -44,7 +44,6 @@ The heart of the system. An advanced automation blueprint designed to track arri
 <br>
 [![Import Person Tracker](https://my.home-assistant.io/badges/blueprint_import.svg)](https://my.home-assistant.io/redirect/blueprint_import/?blueprint_url=https://github.com/fredamn76/homeassistant-blueprints/blob/main/automation/person_zone_tracker.yaml)
 <br>
-
 ---
 
 ### 2. 🔋 Battery Monitor (Required Add-on)
