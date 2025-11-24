@@ -1,0 +1,83 @@
+# package/advanced_alarm_clock_template.yaml
+#
+# THIS FILE IS A TEMPLATE FOR THE BLUEPRINT: Advanced Alarm Clock (MASS & Light).
+#
+# ACTION REQUIRED:
+# 1. Replace all instances of '[PREFIX]' with your desired identifier (e.g., 'peter' or 'guest').
+# 2. Customize the options in 'input_select' for speakers and media files.
+
+input_boolean:
+  # Master Switch
+  [PREFIX]_alarm_enabled:
+    name: "Alarm Clock [PREFIX]: Master (On/Off)"
+    icon: mdi:alarm-check
+  
+  # Weekdays
+  [PREFIX]_alarm_monday:
+    name: "Alarm Clock [PREFIX]: Monday"
+    icon: mdi:calendar-week
+  [PREFIX]_alarm_tuesday:
+    name: "Alarm Clock [PREFIX]: Tuesday"
+    icon: mdi:calendar-week
+  [PREFIX]_alarm_wednesday:
+    name: "Alarm Clock [PREFIX]: Wednesday"
+    icon: mdi:calendar-week
+  [PREFIX]_alarm_thursday:
+    name: "Alarm Clock [PREFIX]: Thursday"
+    icon: mdi:calendar-week
+  [PREFIX]_alarm_friday:
+    name: "Alarm Clock [PREFIX]: Friday"
+    icon: mdi:calendar-week
+  [PREFIX]_alarm_saturday:
+    name: "Alarm Clock [PREFIX]: Saturday"
+    icon: mdi:calendar-weekend
+  [PREFIX]_alarm_sunday:
+    name: "Alarm Clock [PREFIX]: Sunday"
+    icon: mdi:calendar-weekend
+
+input_datetime:
+  [PREFIX]_alarm_time:
+    name: "Alarm Clock [PREFIX]: Alarm Time (Sound)"
+    has_date: false
+    has_time: true
+    icon: mdi:clock-start
+
+input_number:
+  [PREFIX]_alarm_light_offset:
+    name: "Alarm Clock [PREFIX]: Light Head Start (min)"
+    icon: mdi:lightbulb-on-outline
+    min: 1
+    max: 60
+    step: 1
+    unit_of_measurement: "min"
+    mode: slider
+    initial: 20 
+
+  [PREFIX]_alarm_volume_pct:
+    name: "Alarm Clock [PREFIX]: Volume (%)"
+    icon: mdi:volume-high
+    min: 0
+    max: 100
+    step: 5
+    unit_of_measurement: "%"
+    mode: slider
+    initial: 40
+
+input_select:
+  [PREFIX]_alarm_media_file:
+    name: "Alarm Clock [PREFIX]: Media File"
+    icon: mdi:music-note
+    # ACTION REQUIRED: List your media file names here (must be stored in /media/local/local/)
+    options:
+      - "Gentle_River_Birds.mp3"
+      - "Wake_up_AI.mp3"
+      - "Custom_File.mp3"
+
+  [PREFIX]_alarm_media_player:
+    name: "Alarm Clock [PREFIX]: Speaker"
+    icon: mdi:speaker
+    # ACTION REQUIRED: List the entity_ids of the media players you want to use
+    options:
+      - media_player.bedroom_speaker
+      - media_player.master_speaker_2
+      - media_player.kitchen_display
