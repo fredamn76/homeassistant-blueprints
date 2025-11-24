@@ -1,0 +1,401 @@
+type: custom:layout-card
+layout_type: vertical
+cards:
+  # --- 1. HUVUDBRYTARE ---
+  - type: custom:button-card
+    entity: input_boolean.[[PREFIX]]_alarm_enabled
+    name: Väckarklocka ([[NAME]])
+    icon: mdi:alarm-check
+    show_name: true
+    show_state: true
+    state_display: "[[[ return entity.state === \"on\" ? \"På\" : \"Av\" ]]]"
+    tap_action:
+      action: toggle
+    styles:
+      card:
+        - background-color: "#222222"
+        - border-radius: 20px
+        - color: white
+      name:
+        - font-size: 14px
+        - opacity: 0.8
+      state:
+        - font-size: 16px
+        - font-weight: bold
+    state:
+      - value: "on"
+        styles:
+          card:
+            - background-color: rgb(180, 230, 170)
+            - color: "#333333"
+          icon:
+            - color: "#333333"
+          name:
+            - opacity: 1
+          state:
+            - color: "#333333"
+  
+  # --- 2. LJUSLARM vs LJUDLARM TIDER ---
+  - type: grid
+    columns: 2
+    square: false
+    cards:
+      # Ljuslarm (Visar tiden FÖRE Larmtiden)
+      - type: custom:button-card
+        entity: input_datetime.[[PREFIX]]_alarm_time
+        name: Ljuslarm
+        icon: mdi:weather-sunny
+        show_name: true
+        show_state: true
+        show_icon: true
+        state_display: |
+          [[[
+            // Anpassa entitets-ID:n med prefix
+            var time_entity = states['input_datetime.[[PREFIX]]_alarm_time'];
+            var offset_entity = states['input_number.[[PREFIX]]_alarm_light_offset'];
+            
+            if (time_entity && time_entity.state && offset_entity && offset_entity.state) {
+              var time_str = time_entity.state;
+              var offset = Number(offset_entity.state);
+              var parts = time_str.split(':');
+              
+              if (parts.length >= 2) {
+                var hour = Number(parts[0]);
+                var minute = Number(parts[1]);
+                var date = new Date();
+                
+                // Beräknar tiden minus offset
+                date.setHours(hour, minute, 0);
+                date.setMinutes(date.getMinutes() - offset);
+                
+                var h = date.getHours().toString().padStart(2, '0');
+                var m = date.getMinutes().toString().padStart(2, '0');
+                return h + ':' + m;
+              }
+            }
+            return '...';
+          ]]]
+        styles:
+          card:
+            - background-color: rgb(240, 210, 120)
+            - border-radius: 20px
+            - color: "#333333"
+          icon:
+            - color: "#333333"
+          name:
+            - font-size: 14px
+            - font-weight: bold
+          state:
+            - font-size: 20px
+            - font-weight: bold
+            
+      # Ljudlarm (Visar den faktiska Larmtiden)
+      - type: custom:button-card
+        entity: input_datetime.[[PREFIX]]_alarm_time
+        name: Ljudlarm
+        icon: mdi:volume-high
+        show_name: true
+        show_state: true
+        show_icon: true
+        state_display: |
+          [[[
+            // Anpassa entitets-ID med prefix
+            if (entity && entity.state) {
+              var time_str = entity.state;
+              var parts = time_str.split(':');
+              if (parts.length >= 2) {
+                var hour = Number(parts[0]);
+                var minute = Number(parts[1]);
+                return hour.toString().padStart(2, '0') + ':' + minute.toString().padStart(2, '0');
+              }
+            }
+            return '...';
+          ]]]
+        styles:
+          card:
+            - background-color: rgb(180, 230, 170)
+            - border-radius: 20px
+            - color: "#333333"
+          icon:
+            - color: "#333333"
+          name:
+            - font-size: 14px
+            - font-weight: bold
+          state:
+            - font-size: 20px
+            - font-weight: bold
+            
+  # --- 3. STOR KLOCKA (Endast visuell) ---
+  - type: grid
+    columns: 2
+    square: false
+    cards:
+      - type: custom:button-card
+        icon: mdi:clock-outline
+        styles:
+          card:
+            - background: none
+            - box-shadow: none
+          icon:
+            - font-size: 60px
+            - color: white
+            - opacity: 0.8
+      - type: custom:button-card
+        entity: input_datetime.[[PREFIX]]_alarm_time
+        show_state: true
+        show_name: false
+        show_icon: false
+        state_display: |
+          [[[
+            // Anpassa entitets-ID med prefix
+            if (entity && entity.state) {
+              var time_str = entity.state;
+              var parts = time_str.split(':');
+              if (parts.length >= 2) {
+                var hour = Number(parts[0]);
+                var minute = Number(parts[1]);
+                return hour.toString().padStart(2, '0') + ':' + minute.toString().padStart(2, '0');
+              }
+            }
+            return '...';
+          ]]]
+        tap_action:
+          action: more-info
+        styles:
+          card:
+            - background: none
+            - box-shadow: none
+          state:
+            - font-size: 60px
+            - color: white
+            - font-weight: 300
+            - letter-spacing: 2px
+            
+  # --- 4. VECKODAGAR TOGGLES ---
+  - type: grid
+    columns: 7
+    square: false
+    cards:
+      - type: custom:button-card
+        entity: input_boolean.[[PREFIX]]_alarm_monday
+        name: Må
+        styles:
+          card:
+            - background-color: "#444444"
+            - border-radius: 15px
+            - aspect-ratio: 1/1
+          name:
+            - color: white
+        state:
+          - value: "on"
+            styles:
+              card:
+                - background-color: rgb(255, 156, 156)
+      - type: custom:button-card
+        entity: input_boolean.[[PREFIX]]_alarm_tuesday
+        name: Ti
+        styles:
+          card:
+            - background-color: "#444444"
+            - border-radius: 15px
+            - aspect-ratio: 1/1
+          name:
+            - color: white
+        state:
+          - value: "on"
+            styles:
+              card:
+                - background-color: rgb(106, 212, 201)
+      - type: custom:button-card
+        entity: input_boolean.[[PREFIX]]_alarm_wednesday
+        name: "On"
+        styles:
+          card:
+            - background-color: "#444444"
+            - border-radius: 15px
+            - aspect-ratio: 1/1
+          name:
+            - color: white
+        state:
+          - value: "on"
+            styles:
+              card:
+                - background-color: rgb(138, 176, 255)
+      - type: custom:button-card
+        entity: input_boolean.[[PREFIX]]_alarm_thursday
+        name: To
+        styles:
+          card:
+            - background-color: "#444444"
+            - border-radius: 15px
+            - aspect-ratio: 1/1
+          name:
+            - color: white
+        state:
+          - value: "on"
+            styles:
+              card:
+                - background-color: rgb(255, 156, 156)
+      - type: custom:button-card
+        entity: input_boolean.[[PREFIX]]_alarm_friday
+        name: Fr
+        styles:
+          card:
+            - background-color: "#444444"
+            - border-radius: 15px
+            - aspect-ratio: 1/1
+          name:
+            - color: white
+        state:
+          - value: "on"
+            styles:
+              card:
+                - background-color: rgb(213, 151, 255)
+      - type: custom:button-card
+        entity: input_boolean.[[PREFIX]]_alarm_saturday
+        name: Lö
+        styles:
+          card:
+            - background-color: "#444444"
+            - border-radius: 15px
+            - aspect-ratio: 1/1
+          name:
+            - color: white
+        state:
+          - value: "on"
+            styles:
+              card:
+                - background-color: rgb(240, 210, 120)
+      - type: custom:button-card
+        entity: input_boolean.[[PREFIX]]_alarm_sunday
+        name: Sö
+        styles:
+          card:
+            - background-color: "#444444"
+            - border-radius: 15px
+            - aspect-ratio: 1/1
+          name:
+            - color: white
+        state:
+          - value: "on"
+            styles:
+              card:
+                - background-color: rgb(255, 180, 130)
+                
+  # --- 5. LJUDS/LJUS INSTÄLLNINGAR (Number Inputs) ---
+  - type: grid
+    columns: 2
+    square: false
+    cards:
+      - type: custom:button-card
+        entity: input_number.[[PREFIX]]_alarm_light_offset
+        name: Ljus Försprång
+        icon: mdi:timelapse
+        show_name: true
+        show_state: true
+        show_icon: true
+        state_display: "[[[ return entity.state + \" min\" ]]]"
+        tap_action:
+          action: more-info
+        styles:
+          card:
+            - background-color: rgb(240, 210, 120)
+            - border-radius: 20px
+            - color: "#333333"
+          icon:
+            - color: "#333333"
+          name:
+            - font-size: 14px
+            - font-weight: bold
+          state:
+            - font-size: 20px
+            - font-weight: bold
+            
+      - type: custom:button-card
+        entity: input_number.[[PREFIX]]_alarm_volume_pct
+        name: Volym
+        icon: mdi:tune-vertical
+        show_name: true
+        show_state: true
+        show_icon: true
+        state_display: "[[[ return entity.state + \" %\" ]]]"
+        tap_action:
+          action: more-info
+        styles:
+          card:
+            - background-color: rgb(180, 230, 170)
+            - border-radius: 20px
+            - color: "#333333"
+          icon:
+            - color: "#333333"
+          name:
+            - font-size: 14px
+            - font-weight: bold
+          state:
+            - font-size: 20px
+            - font-weight: bold
+            
+  # --- 6. MEDIA/HÖGTALARE INSTÄLLNINGAR (Select Inputs) ---
+  - type: grid
+    columns: 2
+    square: false
+    cards:
+      - type: custom:button-card
+        entity: input_select.[[PREFIX]]_alarm_media_file
+        name: Ljudfil
+        icon: mdi:file-music-outline
+        show_name: true
+        show_state: true
+        show_icon: true
+        state_display: "[[[ return entity.state ? entity.state : \"Inget valt\" ]]]"
+        tap_action:
+          action: more-info
+        styles:
+          card:
+            - background-color: "#222222"
+            - border-radius: 20px
+            - color: white
+          icon:
+            - color: white
+            - opacity: 0.8
+          name:
+            - font-size: 14px
+            - font-weight: bold
+            - opacity: 0.8
+          state:
+            - font-size: 14px
+            - font-weight: normal
+            - opacity: 0.8
+            - text-overflow: ellipsis
+            - overflow: hidden
+            - white-space: nowrap
+            
+      - type: custom:button-card
+        entity: input_select.[[PREFIX]]_alarm_media_player
+        name: Högtalare
+        icon: mdi:speaker
+        show_name: true
+        show_state: true
+        show_icon: true
+        state_display: "[[[ return entity.state ? entity.state : \"Inget valt\" ]]]"
+        tap_action:
+          action: more-info
+        styles:
+          card:
+            - background-color: "#222222"
+            - border-radius: 20px
+            - color: white
+          icon:
+            - color: white
+            - opacity: 0.8
+          name:
+            - font-size: 14px
+            - font-weight: bold
+            - opacity: 0.8
+          state:
+            - font-size: 14px
+            - font-weight: normal
+            - opacity: 0.8
+            - text-overflow: ellipsis
+            - overflow: hidden
+            - white-space: nowrap
