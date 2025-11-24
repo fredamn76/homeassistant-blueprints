@@ -1,0 +1,212 @@
+blueprint:
+  name: "Avancerad Väckarklocka (MASS & Light)"
+  description: >
+    En komplett väckarklocka som hanterar både "Sunrise"-ljus (pre-larm) och lokalt ljud (huvudlarm).
+    
+    VIKTIGT: Denna Blueprint kräver att du skapat specifika Input Helpers (Booleans, Datetime, Selects)
+    för att fungera. Se dokumentation eller paket-exempel för setup.
+    
+    Funktioner:
+    - Dynamisk "Fade-in" av ljus X minuter innan larm.
+    - Uppspelning av lokala filer via MASS/Media Player.
+    - Kollar om person är hemma.
+    - Veckodagshantering via externa input_booleans (för Dashboard-kontroll).
+  
+  # VIKTIGT: Detta gör att HA kan upptäcka uppdateringar från ditt repo
+  source_url: https://github.com/fredamn76/homeassistant-blueprints/blob/main/automation/advanced_alarm_clock_mass.yaml
+  domain: automation
+  input:
+    # --- HUVUDINSTÄLLNINGAR ---
+    person_entity:
+      name: Person att kolla
+      description: Larmet går bara om denna person är 'home'.
+      selector:
+        entity:
+          domain: person
+    
+    alarm_time_entity:
+      name: Larmtid (Input Datetime)
+      description: Entitet som styr när ljudet startar.
+      selector:
+        entity:
+          domain: input_datetime
+
+    alarm_enabled_entity:
+      name: Master Switch (Input Boolean)
+      description: Huvudbrytare för larmet.
+      selector:
+        entity:
+          domain: input_boolean
+
+    # --- DAGAR (UI-SWITCHAR) ---
+    day_monday:
+      name: Måndag (Input Boolean)
+      selector: { entity: { domain: input_boolean } }
+    day_tuesday:
+      name: Tisdag (Input Boolean)
+      selector: { entity: { domain: input_boolean } }
+    day_wednesday:
+      name: Onsdag (Input Boolean)
+      selector: { entity: { domain: input_boolean } }
+    day_thursday:
+      name: Torsdag (Input Boolean)
+      selector: { entity: { domain: input_boolean } }
+    day_friday:
+      name: Fredag (Input Boolean)
+      selector: { entity: { domain: input_boolean } }
+    day_saturday:
+      name: Lördag (Input Boolean)
+      selector: { entity: { domain: input_boolean } }
+    day_sunday:
+      name: Söndag (Input Boolean)
+      selector: { entity: { domain: input_boolean } }
+
+    # --- LJUSINSTÄLLNINGAR ---
+    target_light:
+      name: Lampa för väckning
+      selector:
+        target:
+          entity:
+            domain: light
+    
+    light_offset_entity:
+      name: Ljus-offset (Input Number)
+      description: Hur många minuter innan larmet ska ljuset börja?
+      selector:
+        entity:
+          domain: input_number
+
+    # --- LJUDINSTÄLLNINGAR ---
+    media_player_select:
+      name: Val av högtalare (Input Select)
+      description: En Input Select som innehåller entity_id för media_players.
+      selector:
+        entity:
+          domain: input_select
+
+    media_file_select:
+      name: Val av ljudfil (Input Select)
+      description: En Input Select som innehåller filnamn (i /media/local/local/).
+      selector:
+        entity:
+          domain: input_select
+
+    volume_entity:
+      name: Volym % (Input Number)
+      selector:
+        entity:
+          domain: input_number
+
+mode: parallel
+max: 10
+
+trigger:
+  # TRIGGER 1: Ljus (Pre-Larm)
+  - platform: template
+    id: "trigger_light"
+    value_template: >
+      {% set alarm_time_str = states(inputs.alarm_time_entity) %}
+      {% set offset_min = states(inputs.light_offset_entity) | int(20) %}
+      
+      {# Felhantering #}
+      {% if alarm_time_str in ['unknown', 'unavailable'] %}
+        false
+      {% else %}
+        {% set parts = alarm_time_str.split(':') %}
+        {% set alarm_h = parts[0] | int(7) %}
+        {% set alarm_m = parts[1] | int(0) %}
+        
+        {# Beräkna starttid för ljus #}
+        {% set alarm_time_today = today_at().replace(hour=alarm_h, minute=alarm_m, second=0) %}
+        {% set light_time = alarm_time_today - timedelta(minutes=offset_min) %}
+        
+        {# Trigga exakt på minuten #}
+        {{ now().strftime('%H:%M') == light_time.strftime('%H:%M') }}
+      {% endif %}
+
+  # TRIGGER 2: Ljud (Huvudlarm)
+  - platform: time
+    id: "trigger_sound"
+    at: !input alarm_time_entity
+
+condition:
+  # 1. Master Switch PÅ
+  - condition: state
+    entity_id: !input alarm_enabled_entity
+    state: "on"
+  
+  # 2. Person HEMMA
+  - condition: state
+    entity_id: !input person_entity
+    state: "home"
+
+  # 3. Rätt Veckodag PÅ
+  - condition: template
+    value_template: >
+      {% set day_map = {
+        0: states(inputs.day_monday),
+        1: states(inputs.day_tuesday),
+        2: states(inputs.day_wednesday),
+        3: states(inputs.day_thursday),
+        4: states(inputs.day_friday),
+        5: states(inputs.day_saturday),
+        6: states(inputs.day_sunday)
+      } %}
+      {{ day_map[now().weekday()] == 'on' }}
+
+action:
+  - choose:
+      # --- ACTION: LJUS ---
+      - conditions:
+          - condition: trigger
+            id: "trigger_light"
+        sequence:
+          - service: light.turn_on
+            target: !input target_light
+            data:
+              brightness: 1
+              rgb_color: [255, 160, 80]
+          - delay: "00:00:02"
+          - service: light.turn_on
+            target: !input target_light
+            data:
+              brightness_pct: 100
+              rgb_color: [255, 220, 180]
+              transition: "{{ states(inputs.light_offset_entity) | int(20) * 60 }}"
+
+      # --- ACTION: LJUD ---
+      - conditions:
+          - condition: trigger
+            id: "trigger_sound"
+        sequence:
+          - service: media_player.volume_set
+            target:
+              entity_id: "{{ states(inputs.media_player_select) }}"
+            data:
+              volume_level: "{{ states(inputs.volume_entity) | int(50) / 100 }}"
+          
+          - service: media_player.repeat_set
+            target:
+              entity_id: "{{ states(inputs.media_player_select) }}"
+            data:
+              repeat: "one"
+            continue_on_error: true
+            
+          - service: media_player.play_media
+            target:
+              entity_id: "{{ states(inputs.media_player_select) }}"
+            data:
+              media_content_id: "media-source://media_source/local/local/{{ states(inputs.media_file_select) }}"
+              media_content_type: audio/mpeg
+              metadata:
+                title: "{{ states(inputs.media_file_select) }}"
+                media_class: music
+                children_media_class: null
+                navigateIds:
+                  - {}
+                  - media_content_type: app
+                    media_content_id: media-source://media_source
+                  - media_content_type: ""
+                    media_content_id: media-source://media_source/local/.
+                  - media_content_type: ""
+                    media_content_id: media-source://media_source/local/local
