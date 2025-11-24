@@ -1,4 +1,4 @@
-# 📍 Ultimate Person & Zone Tracker Suite
+# 📍 Ultimate Person & Zone Tracker Suite (v1.0.0)
 
 [![Maintenance](https://img.shields.io/badge/Maintained%3F-yes-green.svg)](https://github.com/fredamn76/homeassistant-blueprints/graphs/commit-activity)
 [![Home Assistant](https://img.shields.io/badge/Home%20Assistant-Blueprints-blue)](https://www.home-assistant.io/)
