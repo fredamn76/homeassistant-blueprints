@@ -43,7 +43,7 @@ The heart of the system. An advanced automation blueprint designed to track arri
 
 <br>
 [![Import Person Tracker](https://my.home-assistant.io/badges/blueprint_import.svg)](https://my.home-assistant.io/redirect/blueprint_import/?blueprint_url=https://github.com/fredamn76/homeassistant-blueprints/blob/main/automation/person_zone_tracker.yaml)
-<br>
+
 ---
 
 ### 2. 🔋 Battery Monitor (Required Add-on)
@@ -69,7 +69,7 @@ Reliable tracking requires power. This blueprint monitors the devices used by th
 
 <br>
 [![Import Battery Monitor](https://my.home-assistant.io/badges/blueprint_import.svg)](https://my.home-assistant.io/redirect/blueprint_import/?blueprint_url=https://github.com/fredamn76/homeassistant-blueprints/blob/main/automation/battery_monitor.yaml)
-<br>
+
 
 ---
 
@@ -162,7 +162,7 @@ This Blueprint requires external helpers to function. Use the provided templates
 
 <br>
 [![Import Advanced Alarm Clock](https://my.home-assistant.io/badges/blueprint_import.svg)](https://my.home-assistant.io/redirect/blueprint_import/?blueprint_url=https://github.com/fredamn76/homeassistant-blueprints/blob/main/automation/advanced_alarm_clock_mass.yaml)
-<br>
+
 
 ---
 *Developed with ❤️ and 🤖 using AI-assisted coding & QA.*
