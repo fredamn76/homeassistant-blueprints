@@ -41,7 +41,7 @@ The heart of the system. An advanced automation blueprint designed to track arri
 
 </details>
 
-<br>
+
 [![Import Person Tracker](https://my.home-assistant.io/badges/blueprint_import.svg)](https://my.home-assistant.io/redirect/blueprint_import/?blueprint_url=https://github.com/fredamn76/homeassistant-blueprints/blob/main/automation/person_zone_tracker.yaml)
 
 ---
@@ -67,7 +67,7 @@ Reliable tracking requires power. This blueprint monitors the devices used by th
 
 </details>
 
-<br>
+
 [![Import Battery Monitor](https://my.home-assistant.io/badges/blueprint_import.svg)](https://my.home-assistant.io/redirect/blueprint_import/?blueprint_url=https://github.com/fredamn76/homeassistant-blueprints/blob/main/automation/battery_monitor.yaml)
 
 
@@ -160,7 +160,7 @@ This Blueprint requires external helpers to function. Use the provided templates
 | **Helper Template** | [packages/advanced_alarm_clock_template.yaml](packages/advanced_alarm_clock_template.yaml) | **Required.** YAML template to quickly create all necessary `input_*` helpers (`input_boolean`, `input_number`, etc.). Requires replacing the `[PREFIX]` placeholder. |
 | **Dashboard View** | [dashboards/advanced_alarm_clock_dashboard_template.yaml](dashboards/advanced_alarm_clock_dashboard_template.yaml) | YAML for a customized Lovelace view designed to control all helper entities easily. Requires replacing `[[PREFIX]]` and `[[NAME]]` placeholders. |
 
-<br>
+
 [![Import Advanced Alarm Clock](https://my.home-assistant.io/badges/blueprint_import.svg)](https://my.home-assistant.io/redirect/blueprint_import/?blueprint_url=https://github.com/fredamn76/homeassistant-blueprints/blob/main/automation/advanced_alarm_clock_mass.yaml)
 
 
