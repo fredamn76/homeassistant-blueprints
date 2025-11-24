@@ -1,98 +1,98 @@
 blueprint:
-  name: "Avancerad Väckarklocka (MASS & Light)"
+  name: "Advanced Alarm Clock (MASS & Light)"
   description: >
-    En komplett väckarklocka som hanterar både "Sunrise"-ljus (pre-larm) och lokalt ljud (huvudlarm).
+    A comprehensive alarm clock solution featuring both a 'Sunrise' light fade (pre-alarm) 
+    and local sound playback (main alarm).
     
-    VIKTIGT: Denna Blueprint kräver att du skapat specifika Input Helpers (Booleans, Datetime, Selects)
-    för att fungera. Se dokumentation eller paket-exempel för setup.
+    IMPORTANT: This Blueprint requires specific Input Helpers (Booleans, Datetime, Selects, etc.)
+    to be created first. Refer to the repository documentation/template for setup instructions.
     
-    Funktioner:
-    - Dynamisk "Fade-in" av ljus X minuter innan larm.
-    - Uppspelning av lokala filer via MASS/Media Player.
-    - Kollar om person är hemma.
-    - Veckodagshantering via externa input_booleans (för Dashboard-kontroll).
+    Features:
+    - Dynamic light 'Fade-in' starting X minutes before the main alarm.
+    - Local media playback via MASS/Media Player.
+    - Checks if the target person is home.
+    - Weekday management via external input_booleans (for Dashboard control).
   
-  # VIKTIGT: Detta gör att HA kan upptäcka uppdateringar från ditt repo
   source_url: https://github.com/fredamn76/homeassistant-blueprints/blob/main/automation/advanced_alarm_clock_mass.yaml
   domain: automation
   input:
-    # --- HUVUDINSTÄLLNINGAR ---
+    # --- MAIN SETTINGS ---
     person_entity:
-      name: Person att kolla
-      description: Larmet går bara om denna person är 'home'.
+      name: Person Entity to Check
+      description: The alarm will only trigger if this person is 'home'.
       selector:
         entity:
           domain: person
     
     alarm_time_entity:
-      name: Larmtid (Input Datetime)
-      description: Entitet som styr när ljudet startar.
+      name: Alarm Time (Input Datetime)
+      description: The helper entity that controls when the sound starts.
       selector:
         entity:
           domain: input_datetime
 
     alarm_enabled_entity:
       name: Master Switch (Input Boolean)
-      description: Huvudbrytare för larmet.
+      description: Main toggle to enable/disable the alarm system.
       selector:
         entity:
           domain: input_boolean
 
-    # --- DAGAR (UI-SWITCHAR) ---
+    # --- DAY TOGGLES (UI SWITCHES) ---
     day_monday:
-      name: Måndag (Input Boolean)
+      name: Monday (Input Boolean)
       selector: { entity: { domain: input_boolean } }
     day_tuesday:
-      name: Tisdag (Input Boolean)
+      name: Tuesday (Input Boolean)
       selector: { entity: { domain: input_boolean } }
     day_wednesday:
-      name: Onsdag (Input Boolean)
+      name: Wednesday (Input Boolean)
       selector: { entity: { domain: input_boolean } }
     day_thursday:
-      name: Torsdag (Input Boolean)
+      name: Thursday (Input Boolean)
       selector: { entity: { domain: input_boolean } }
     day_friday:
-      name: Fredag (Input Boolean)
+      name: Friday (Input Boolean)
       selector: { entity: { domain: input_boolean } }
     day_saturday:
-      name: Lördag (Input Boolean)
+      name: Saturday (Input Boolean)
       selector: { entity: { domain: input_boolean } }
     day_sunday:
-      name: Söndag (Input Boolean)
+      name: Sunday (Input Boolean)
       selector: { entity: { domain: input_boolean } }
 
-    # --- LJUSINSTÄLLNINGAR ---
+    # --- LIGHT SETTINGS ---
     target_light:
-      name: Lampa för väckning
+      name: Light for Wake-up Effect
       selector:
         target:
           entity:
             domain: light
     
     light_offset_entity:
-      name: Ljus-offset (Input Number)
-      description: Hur många minuter innan larmet ska ljuset börja?
+      name: Light Head Start (min)
+      description: How many minutes before the main alarm should the light fade begin?
       selector:
         entity:
           domain: input_number
 
-    # --- LJUDINSTÄLLNINGAR ---
+    # --- SOUND SETTINGS ---
     media_player_select:
-      name: Val av högtalare (Input Select)
-      description: En Input Select som innehåller entity_id för media_players.
+      name: Speaker Selection (Input Select)
+      description: An Input Select containing the entity_ids of the media players.
       selector:
         entity:
           domain: input_select
 
     media_file_select:
-      name: Val av ljudfil (Input Select)
-      description: En Input Select som innehåller filnamn (i /media/local/local/).
+      name: Sound File Selection (Input Select)
+      description: An Input Select containing the required media filenames (in /media/local/local/).
       selector:
         entity:
           domain: input_select
 
     volume_entity:
-      name: Volym % (Input Number)
+      name: Volume % (Input Number)
       selector:
         entity:
           domain: input_number
@@ -101,14 +101,15 @@ mode: parallel
 max: 10
 
 trigger:
-  # TRIGGER 1: Ljus (Pre-Larm)
+  # TRIGGER 1: Light (Pre-Alarm)
+  # Uses a template trigger to check every minute if now() == (Alarm Time - Offset)
   - platform: template
     id: "trigger_light"
     value_template: >
       {% set alarm_time_str = states(inputs.alarm_time_entity) %}
       {% set offset_min = states(inputs.light_offset_entity) | int(20) %}
       
-      {# Felhantering #}
+      {# Error handling if entities are unavailable #}
       {% if alarm_time_str in ['unknown', 'unavailable'] %}
         false
       {% else %}
@@ -116,31 +117,31 @@ trigger:
         {% set alarm_h = parts[0] | int(7) %}
         {% set alarm_m = parts[1] | int(0) %}
         
-        {# Beräkna starttid för ljus #}
+        {# Calculate the light start time for today #}
         {% set alarm_time_today = today_at().replace(hour=alarm_h, minute=alarm_m, second=0) %}
         {% set light_time = alarm_time_today - timedelta(minutes=offset_min) %}
         
-        {# Trigga exakt på minuten #}
+        {# Trigger exactly at the calculated light start time #}
         {{ now().strftime('%H:%M') == light_time.strftime('%H:%M') }}
       {% endif %}
 
-  # TRIGGER 2: Ljud (Huvudlarm)
+  # TRIGGER 2: Sound (Main Alarm)
   - platform: time
     id: "trigger_sound"
     at: !input alarm_time_entity
 
 condition:
-  # 1. Master Switch PÅ
+  # 1. Master Switch must be ON
   - condition: state
     entity_id: !input alarm_enabled_entity
     state: "on"
   
-  # 2. Person HEMMA
+  # 2. Person must be HOME
   - condition: state
     entity_id: !input person_entity
     state: "home"
 
-  # 3. Rätt Veckodag PÅ
+  # 3. Correct Weekday must be ON
   - condition: template
     value_template: >
       {% set day_map = {
@@ -156,35 +157,40 @@ condition:
 
 action:
   - choose:
-      # --- ACTION: LJUS ---
+      # --- ACTION: LIGHT (Sunrise Fade) ---
       - conditions:
           - condition: trigger
             id: "trigger_light"
         sequence:
+          # Step 1: Turn light on at minimum brightness (to set the color)
           - service: light.turn_on
             target: !input target_light
             data:
               brightness: 1
               rgb_color: [255, 160, 80]
           - delay: "00:00:02"
+          # Step 2: Fade to full brightness over the defined offset period
           - service: light.turn_on
             target: !input target_light
             data:
               brightness_pct: 100
               rgb_color: [255, 220, 180]
+              # Transition time is offset (minutes) converted to seconds
               transition: "{{ states(inputs.light_offset_entity) | int(20) * 60 }}"
 
-      # --- ACTION: LJUD ---
+      # --- ACTION: SOUND (Main Alarm) ---
       - conditions:
           - condition: trigger
             id: "trigger_sound"
         sequence:
+          # 1. Set Volume
           - service: media_player.volume_set
             target:
               entity_id: "{{ states(inputs.media_player_select) }}"
             data:
               volume_level: "{{ states(inputs.volume_entity) | int(50) / 100 }}"
           
+          # 2. Set Repeat (Loop the file)
           - service: media_player.repeat_set
             target:
               entity_id: "{{ states(inputs.media_player_select) }}"
@@ -192,6 +198,7 @@ action:
               repeat: "one"
             continue_on_error: true
             
+          # 3. Play Media File
           - service: media_player.play_media
             target:
               entity_id: "{{ states(inputs.media_player_select) }}"
